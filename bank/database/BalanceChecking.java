@@ -1,13 +1,12 @@
 package bank.database;
 
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 
 public class BalanceChecking {
 	private static final Scanner input=new Scanner(System.in);
-	private static Helper helper=new Helper();
+	private static final Helper helper=new Helper();
 	public static void main(String[] args) throws Exception{
 		BalanceChecking balanceChecking= new BalanceChecking();
 		helper.callingDatabaseForCustomer();

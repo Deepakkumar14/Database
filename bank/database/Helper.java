@@ -3,9 +3,7 @@ package bank.database;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Helper {
-    private static ArrayList<ArrayList> details = new ArrayList<>();
-
+public class Helper{
     public void callingDatabaseForAccount() {
         ArrayList<AccountDetails> accountList= DatabaseManagement.dataRetrievalOfAccount();
         for(int i=0;i<accountList.size();i++){
@@ -19,9 +17,11 @@ public class Helper {
             CacheMemory.INSTANCE.setCustomerDetails(customerList.get(i));
         }
     }
+
     public boolean retrieveBooleanValue(int id){
         return CacheMemory.INSTANCE.accountBoolean().containsKey(id);
     }
+
     public String retrieveCustomerDetails(int id) {
 
         CustomerDetails customerValues=CacheMemory.INSTANCE.customerDetails(id);
@@ -35,19 +35,14 @@ public class Helper {
     }
 
 
-    public HashMap retrieveAllAccountBalance(int id) {
+    public HashMap<Long, AccountDetails> retrieveAllAccountBalance(int id) {
         HashMap<Long, AccountDetails> accountMap=CacheMemory.INSTANCE.accountDetails(id);
-
-        if (accountMap!=null) {
-            return accountMap;
-        } else {
-            return null;
-        }
+        return accountMap;
 
     }
 
 
-    public String retrieveParticularAccountBalance(long accNum, int id) throws Exception {
+    public String retrieveParticularAccountBalance(long accNum, int id)  {
         HashMap<Long, AccountDetails> accountMap=CacheMemory.INSTANCE.accountDetails(id);
             if (accountMap.get(accNum)!=null) {
                 AccountDetails accountValue=accountMap.get(accNum);
