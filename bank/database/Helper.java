@@ -61,10 +61,8 @@ public class Helper{
             AccountDetails accInfo = (AccountDetails) details.get(i).get(1);
             cusInfo.setCustomerId(customerId.get(i));
             accInfo.setCustomerId(customerId.get(i));
-            long accountNumber= DatabaseManagement.insertAccountInfoToTable(accInfo);
-            accInfo.setAccountNumber(accountNumber);
             CacheMemory.INSTANCE.setCustomerDetails(cusInfo);
-            CacheMemory.INSTANCE.setAccountMap(accInfo);
+           insertNewAccountDetails(accInfo);
         }
     }
 
