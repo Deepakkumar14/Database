@@ -64,8 +64,8 @@ public class Helper{
             int cusId=customerId.get(i);
             cusInfo.setCustomerId(cusId);
             accInfo.setCustomerId(cusId);
-            CacheMemory.INSTANCE.setCustomerDetails(cusInfo);
            insertNewAccountDetails(accInfo);
+            CacheMemory.INSTANCE.setCustomerDetails(cusInfo);
         }
     }
 

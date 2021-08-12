@@ -99,10 +99,8 @@ public class DatabaseManagement {
 		getConnection();
 		ArrayList<Integer> customerIdList=new ArrayList<>();
 		try{
-
 			String query = "insert into customer_details (full_name,city) values (?,?)";
 			prepStmt1 = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-
 			for(int i=0;i< details.size();i++) {
 				CustomerDetails cusInfo = (CustomerDetails) details.get(i).get(0);
 				prepStmt1.setString(1, cusInfo.getName());
@@ -114,7 +112,7 @@ public class DatabaseManagement {
 				System.out.println("CustomerId :"+cusId+"\t"+"Name :"+cusInfo.getName());
 				customerIdList.add(cusId);
 			}
-			prepStmt1.executeBatch();
+			//prepStmt1.executeBatch();
 		}
 		catch(Exception e){
 			e.printStackTrace();
@@ -146,7 +144,7 @@ public class DatabaseManagement {
 				res.next();
 				accNum = res.getInt(1);
 				System.out.println("AccountNumber :" + accNum + "\t" + "Balance :" + accInfo.getBalance());
-			prepStmt.executeBatch();
+			//prepStmt.executeBatch();
 		}
 		catch(Exception e){
 			e.printStackTrace();
