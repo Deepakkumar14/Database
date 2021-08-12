@@ -68,7 +68,6 @@ public class BalanceChecking {
 				System.out.println("Enter account balance");
 				accountDetails.setBalance(input.nextBigDecimal());
 				helper.insertNewAccountDetails(accountDetails);
-				userChoice();
 				System.out.println();
 
 			}

@@ -9,14 +9,13 @@ public class DatabaseManagement {
 	private static final String URL = "jdbc:mysql://localhost:3306/bank1";
 	private static final String USERNAME = "root";
 	private static final String PASSWORD = "1234";
-	private static Connection conn = null;
+	private  static Connection conn = null;
 	private static PreparedStatement prepStmt =null;
 	private static PreparedStatement prepStmt1 =null;
 	private static ResultSet resultSet =null;
 
 
-
-	public static void initializeConnection(){
+	public  void initializeConnection(){
 		try{
 			Class.forName(DRIVER);
 			conn = DriverManager.getConnection(URL,USERNAME,PASSWORD);
@@ -27,7 +26,7 @@ public class DatabaseManagement {
 	}
 
 
-	public static Connection getConnection(){
+	public  Connection getConnection(){
 		if(conn == null){
 			initializeConnection();
 		}
@@ -35,8 +34,8 @@ public class DatabaseManagement {
 	}
 
 
-	public static ArrayList<CustomerDetails> dataRetrievalOfCustomer() {
-		getConnection();
+	public  ArrayList<CustomerDetails> dataRetrievalOfCustomer() {
+		Connection conn=getConnection();
 		ArrayList<CustomerDetails> customerList = new ArrayList<>();
 		try  {
 			Statement stmt = conn.createStatement();
@@ -58,7 +57,7 @@ public class DatabaseManagement {
 	}
 
 
-	public static ArrayList<AccountDetails> dataRetrievalOfAccount(){
+	public  ArrayList<AccountDetails> dataRetrievalOfAccount(){
 		getConnection();
 		ArrayList<AccountDetails> accountList=new ArrayList<>();
 		try  {
@@ -81,7 +80,7 @@ public class DatabaseManagement {
 	}
 
 
-	public static ArrayList<Integer> insertCustomerInfoToTable(ArrayList<ArrayList> details) {
+	public  ArrayList<Integer> insertCustomerInfoToTable(ArrayList<ArrayList> details) {
 		getConnection();
 		ArrayList<Integer> customerIdList=new ArrayList<>();
 		try{
@@ -118,7 +117,7 @@ public class DatabaseManagement {
 		return customerIdList;
 	}
 
-	public static long insertAccountInfoToTable(AccountDetails accInfo) {
+	public  long insertAccountInfoToTable(AccountDetails accInfo) {
 		long accNum=0;
 		getConnection();
 		try{

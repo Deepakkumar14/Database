@@ -4,15 +4,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Helper{
+    DatabaseManagement databaseManagement=new DatabaseManagement();
     public void callingDatabaseForAccount() {
-        ArrayList<AccountDetails> accountList= DatabaseManagement.dataRetrievalOfAccount();
+        ArrayList<AccountDetails> accountList= databaseManagement.dataRetrievalOfAccount();
         for(int i=0;i<accountList.size();i++){
             CacheMemory.INSTANCE.setAccountMap(accountList.get(i));
         }
 
     }
     public void callingDatabaseForCustomer(){
-        ArrayList<CustomerDetails> customerList = DatabaseManagement.dataRetrievalOfCustomer();
+        ArrayList<CustomerDetails> customerList = databaseManagement.dataRetrievalOfCustomer();
         for(int i=0;i<customerList.size();i++){
             CacheMemory.INSTANCE.setCustomerDetails(customerList.get(i));
         }
@@ -55,7 +56,7 @@ public class Helper{
 
 
     public void insertNewCustomerDetails(ArrayList<ArrayList> details) {
-        ArrayList<Integer> customerId=DatabaseManagement.insertCustomerInfoToTable(details);
+        ArrayList<Integer> customerId=databaseManagement.insertCustomerInfoToTable(details);
         for(int i=0;i< details.size();i++) {
             CustomerDetails cusInfo = (CustomerDetails) details.get(i).get(0);
             AccountDetails accInfo = (AccountDetails) details.get(i).get(1);
@@ -67,7 +68,7 @@ public class Helper{
     }
 
     public void insertNewAccountDetails(AccountDetails accDetails) {
-        long accountNumber=DatabaseManagement.insertAccountInfoToTable(accDetails);
+        long accountNumber=databaseManagement.insertAccountInfoToTable(accDetails);
         accDetails.setAccountNumber(accountNumber);
         CacheMemory.INSTANCE.setAccountMap(accDetails);
        }
