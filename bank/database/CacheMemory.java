@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public enum CacheMemory {
     INSTANCE;
-    private HashMap<Integer,CustomerDetails> customerMap =new HashMap<>();
+    private  HashMap<Integer,CustomerDetails> customerMap =new HashMap<>();
     private  HashMap<Integer,HashMap<Long,AccountDetails>> accountMap =new HashMap<>();
 
 
