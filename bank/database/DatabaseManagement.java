@@ -15,6 +15,7 @@ public class DatabaseManagement {
 	private  static Connection conn = null;
 	private static PreparedStatement prepStmt =null;
 	private static PreparedStatement prepStmt1 =null;
+	private  static Statement stmt=null;
 	private static ResultSet resultSet =null;
 
 
@@ -40,9 +41,9 @@ public class DatabaseManagement {
 	public  ArrayList<CustomerDetails> dataRetrievalOfCustomer() {
 		Connection conn=getConnection();
 		ArrayList<CustomerDetails> customerList = new ArrayList<>();
-		try  {
+		try {
 			Statement stmt = conn.createStatement();
-			resultSet= stmt.executeQuery("select * from  customer_details");
+			resultSet = stmt.executeQuery("select * from  customer_details");
 			while (resultSet.next()) {
 				CustomerDetails customerInfoToMap = new CustomerDetails();
 				int cusId = resultSet.getInt("customer_id");
@@ -51,10 +52,15 @@ public class DatabaseManagement {
 				customerInfoToMap.setCity(resultSet.getString("city"));
 				customerList.add(customerInfoToMap);
 			}
-		}
-
-		catch(Exception e){
+		}catch(Exception e){
 			e.printStackTrace();
+		}finally {
+			if (stmt!= null)
+				try {
+					stmt.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 		}
 		return customerList;
 	}
@@ -78,10 +84,16 @@ public class DatabaseManagement {
 		}
 		catch(Exception e){
 			e.printStackTrace();
+		}finally {
+			if (stmt!= null)
+				try {
+					stmt.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 		}
 		return accountList;
 	}
-
 
 	public  ArrayList<Integer> insertCustomerInfoToTable(ArrayList<ArrayList> details) {
 		getConnection();

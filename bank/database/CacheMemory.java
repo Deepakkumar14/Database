@@ -13,12 +13,10 @@ public enum CacheMemory {
     }
 
     public HashMap<Long,AccountDetails> accountDetails(int id) {
-
         return accountMap.get(id);
     }
 
     public CustomerDetails customerDetails(int id) {
-
         return customerMap.get(id);
     }
     public void setCustomerDetails(CustomerDetails customerDetails) {

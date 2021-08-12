@@ -5,13 +5,14 @@ import java.util.HashMap;
 
 public class Helper{
     DatabaseManagement databaseManagement=new DatabaseManagement();
+
     public void callingDatabaseForAccount() {
         ArrayList<AccountDetails> accountList= databaseManagement.dataRetrievalOfAccount();
         for(int i=0;i<accountList.size();i++){
             CacheMemory.INSTANCE.setAccountMap(accountList.get(i));
         }
-
     }
+
     public void callingDatabaseForCustomer(){
         ArrayList<CustomerDetails> customerList = databaseManagement.dataRetrievalOfCustomer();
         for(int i=0;i<customerList.size();i++){
@@ -60,8 +61,9 @@ public class Helper{
         for(int i=0;i< details.size();i++) {
             CustomerDetails cusInfo = (CustomerDetails) details.get(i).get(0);
             AccountDetails accInfo = (AccountDetails) details.get(i).get(1);
-            cusInfo.setCustomerId(customerId.get(i));
-            accInfo.setCustomerId(customerId.get(i));
+            int cusId=customerId.get(i);
+            cusInfo.setCustomerId(cusId);
+            accInfo.setCustomerId(cusId);
             CacheMemory.INSTANCE.setCustomerDetails(cusInfo);
            insertNewAccountDetails(accInfo);
         }
