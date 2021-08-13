@@ -1,11 +1,9 @@
 package bank.database;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class DatabaseManagement {
 	private static final String DRIVER =  "com.mysql.cj.jdbc.Driver";
@@ -95,9 +93,11 @@ public class DatabaseManagement {
 		return accountList;
 	}
 
-	public  ArrayList<Integer> insertCustomerInfoToTable(ArrayList<ArrayList> details) {
+	public ArrayList insertCustomerInfoToTable(ArrayList<ArrayList> details)  {
 		getConnection();
-		ArrayList<Integer> customerIdList=new ArrayList<>();
+		ResultSet res;
+		int[] successRate;
+		ArrayList finalList = new ArrayList();
 		try{
 			String query = "insert into customer_details (full_name,city) values (?,?)";
 			prepStmt1 = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
@@ -105,19 +105,37 @@ public class DatabaseManagement {
 				CustomerDetails cusInfo = (CustomerDetails) details.get(i).get(0);
 				prepStmt1.setString(1, cusInfo.getName());
 				prepStmt1.setString(2, cusInfo.getCity());
-				prepStmt1.executeUpdate();
-				ResultSet res= prepStmt1.getGeneratedKeys();
-				res.next();
-				int cusId=res.getInt(1);
-				System.out.println("CustomerId :"+cusId+"\t"+"Name :"+cusInfo.getName());
-				customerIdList.add(cusId);
+				prepStmt1.addBatch();
 			}
-			//prepStmt1.executeBatch();
+			successRate=prepStmt1.executeBatch();
+			for (Integer i:successRate) {
+				finalList.add(i);
+			}
+			 res= prepStmt1.getGeneratedKeys();
+			while (res.next()) {
+				int cusId= res.getInt(1);
+				finalList.add(cusId);
+			}
+			System.out.println(finalList);
 		}
-		catch(Exception e){
-			e.printStackTrace();
-		}
-		finally {
+		catch(BatchUpdateException e){
+			try {
+				successRate=e.getUpdateCounts();
+				for (Integer i:successRate) {
+					finalList.add(i);
+				}
+				res= prepStmt1.getGeneratedKeys();
+				while (res.next()) {
+					int cusId= res.getInt(1);
+					finalList.add(cusId);
+				}
+				System.out.println(finalList);
+			} catch (Exception exception) {
+				exception.printStackTrace();
+			}
+		} catch (Exception exception) {
+			exception.printStackTrace();
+		} finally {
 			if (prepStmt1 !=null)
 				try {
 					prepStmt1.close();
@@ -128,7 +146,7 @@ public class DatabaseManagement {
 		}
 		System.out.println("Values inserted successfully");
 		System.out.println("----------------------------------");
-		return customerIdList;
+		return finalList;
 	}
 
 	public  long insertAccountInfoToTable(AccountDetails accInfo) {
@@ -144,7 +162,7 @@ public class DatabaseManagement {
 				res.next();
 				accNum = res.getInt(1);
 				System.out.println("AccountNumber :" + accNum + "\t" + "Balance :" + accInfo.getBalance());
-			//prepStmt.executeBatch();
+			prepStmt.executeBatch();
 		}
 		catch(Exception e){
 			e.printStackTrace();
@@ -163,16 +181,10 @@ public class DatabaseManagement {
 	}
 
 
-	public static void closeConnection() throws Exception{
+	public static boolean closeConnection() throws Exception{
 		conn.close();
 		boolean bool=conn.isClosed();
-		if(bool) {
-			System.out.println("Database is closed: "+bool);
-		}
-		else {
-			conn.close();
-			System.out.println("Database is closed");
-		}
+		return bool;
 	}
 
 }

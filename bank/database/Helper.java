@@ -57,14 +57,16 @@ public class Helper{
 
 
     public void insertNewCustomerDetails(ArrayList<ArrayList> details) {
-        ArrayList<Integer> customerId=databaseManagement.insertCustomerInfoToTable(details);
+        ArrayList<Integer> successRate= databaseManagement.insertCustomerInfoToTable(details);
+
+
         for(int i=0;i< details.size();i++) {
             CustomerDetails cusInfo = (CustomerDetails) details.get(i).get(0);
             AccountDetails accInfo = (AccountDetails) details.get(i).get(1);
             int cusId=customerId.get(i);
             cusInfo.setCustomerId(cusId);
             accInfo.setCustomerId(cusId);
-           insertNewAccountDetails(accInfo);
+            insertNewAccountDetails(accInfo);
             CacheMemory.INSTANCE.setCustomerDetails(cusInfo);
         }
     }
@@ -73,6 +75,11 @@ public class Helper{
         long accountNumber=databaseManagement.insertAccountInfoToTable(accDetails);
         accDetails.setAccountNumber(accountNumber);
         CacheMemory.INSTANCE.setAccountMap(accDetails);
+       }
+
+       public boolean closeConnection() throws Exception {
+           return DatabaseManagement.closeConnection();
+
        }
     }
 

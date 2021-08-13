@@ -102,7 +102,13 @@ public class BalanceChecking {
 			}
 			//----------------------------------------------------------------------------------------------
 			else if (choice == 4) {
-				DatabaseManagement.closeConnection();
+				boolean bool=helper.closeConnection();
+				if(bool) {
+					System.out.println("Connection is closed: "+bool);
+				}
+				else {
+					System.out.println("Connection is Not closed");
+				}
 				break;
 			}
 			//----------------------------------------------------------------------------------------------
