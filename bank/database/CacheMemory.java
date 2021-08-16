@@ -21,14 +21,29 @@ public enum CacheMemory {
     }
 
     public void setCustomerDetails(CustomerDetails customerDetails) {
-        int cusId=customerDetails.getCustomerId();
-        customerMap.put(cusId,customerDetails);
+        if(customerDetails!=null) {
+            int cusId = customerDetails.getCustomerId();
+            customerMap.put(cusId, customerDetails);
+        }
+    }
+
+    public boolean deleteCustomer(int id){
+        customerMap.remove(id);
+        accountMap.remove(id);
+        return true;
+    }
+    public boolean deleteAccount(int id,long accNum){
+        HashMap<Long,AccountDetails> account=accountMap.get(id);
+        account.remove(accNum);
+        return true;
     }
 
     public void setAccountMap(AccountDetails accountDetails) {
-        int cusId=accountDetails.getCustomerId();
-        HashMap<Long,AccountDetails> accountDetailsHashMap = accountMap.getOrDefault(cusId,new HashMap<>());
-        accountDetailsHashMap.put(accountDetails.getAccountNumber(),accountDetails);
-        accountMap.put(cusId,accountDetailsHashMap);
+        if(accountDetails!=null) {
+            int cusId = accountDetails.getCustomerId();
+            HashMap<Long, AccountDetails> accountDetailsHashMap = accountMap.getOrDefault(cusId, new HashMap<>());
+            accountDetailsHashMap.put(accountDetails.getAccountNumber(), accountDetails);
+            accountMap.put(cusId, accountDetailsHashMap);
+        }
     }
  }

@@ -1,8 +1,7 @@
 package bank.database;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Scanner;
+import java.math.BigDecimal;
+import java.util.*;
 
 public class BalanceChecking {
 	private static final Scanner input=new Scanner(System.in);
@@ -20,7 +19,8 @@ public class BalanceChecking {
 			System.out.println("2.Existing user-Need to add new account");
 			System.out.println("3.New Customer-Need to Enter Customer details");
 			System.out.println("4.To Delete an  Customer or account");
-			System.out.println("5. Exit");
+			System.out.println("5.To withdraw amount from particular account");
+			System.out.println("6. Exit");
 			System.out.println();
 			System.out.println("Enter your choice");
 			int choice = input.nextInt();
@@ -68,7 +68,11 @@ public class BalanceChecking {
 				accountDetails.setCustomerId(input.nextInt());
 				System.out.println("Enter account balance");
 				accountDetails.setBalance(input.nextBigDecimal());
-				helper.insertNewAccountDetails(accountDetails);
+				input.nextLine();
+				System.out.println("Enter the branch name");
+				accountDetails.setBranch(input.nextLine());
+				String output=helper.insertNewAccountDetails(accountDetails);
+				System.out.println(output);
 				System.out.println();
 
 			}
@@ -78,10 +82,11 @@ public class BalanceChecking {
 				int customers = input.nextInt();
 				input.nextLine();
 				ArrayList<ArrayList> details = new ArrayList<>();
-				while (customers-- > 0) {
+				for(int i=1;i<=customers;i++) {
 					CustomerDetails customerDetails = new CustomerDetails();
 					accountDetails = new AccountDetails();
 
+					System.out.println("Enter the details for customer "+i);
 					ArrayList innerArrayList = new ArrayList(2);
 					System.out.println("Enter the user name");
 					customerDetails.setName(input.nextLine());
@@ -92,21 +97,50 @@ public class BalanceChecking {
 					System.out.println("Enter the account balance");
 					accountDetails.setBalance(input.nextBigDecimal());
 					input.nextLine();
+					System.out.println("Enter the branch name");
+					accountDetails.setBranch(input.nextLine());
 
 					innerArrayList.add(customerDetails);
 					innerArrayList.add(accountDetails);
 					details.add(innerArrayList);
 
 				}
-				helper.checkPoint(details);
+				HashMap<Object, String> successAndFailure=helper.checkPoint(details);
+				for (Map.Entry entry:successAndFailure.entrySet()) {
+					System.out.println(entry.getValue()+"="+entry.getKey());
+				}
 				System.out.println();
 			}
 			//----------------------------------------------------------------------------------------------
 			else if(choice ==4){
+				System.out.println("Enter customerId");
+				int customerId = input.nextInt();
 				System.out.println("Enter 1 To delete customer  \nEnter 2 To delete particular account\n");
+				int value = input.nextInt();
+				if(value==1){
+					if(helper.deleteCustomer(customerId)){
+						System.out.println("Account Deleted");
+					}
+				}
 			}
+			//---------------------------------------------------------------------------------------------
+			else if(choice ==5){
+				System.out.println("Enter customerId");
+				int customerId = input.nextInt();
+				System.out.println("Enter the account number from which you have to withdraw");
+				long accountNum = input.nextLong();
+					if(helper.retrieveAccountBooleanValue(customerId,accountNum)){
+						System.out.print("Enter the amount to withdraw: ");
+						BigDecimal amount = input.nextBigDecimal();
+						if()
+
+					}
+
+
+			}
+
 			//----------------------------------------------------------------------------------------------
-			else if (choice == 5) {
+			else if (choice == 6) {
 				boolean bool=helper.closeConnection();
 				if(bool) {
 					System.out.println("Connection is closed: "+bool);

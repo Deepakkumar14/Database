@@ -1,17 +1,14 @@
 package bank.database;
 
-import com.sun.corba.se.pept.transport.ConnectionCache;
-
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class DatabaseManagement {
 	private static final String DRIVER =  "com.mysql.cj.jdbc.Driver";
-	private static final String URL = "jdbc:mysql://localhost:3306/bank1";
+	private static final String URL = "jdbc:mysql://localhost:3306/Zohobank";
 	private static final String USERNAME = "root";
-	private static final String PASSWORD = "Deep@2000";
+	private static final String PASSWORD = "1234";
 	private  static Connection conn = null;
 	private static PreparedStatement prepStmt =null;
 	private static PreparedStatement prepStmt1 =null;
@@ -79,6 +76,7 @@ public class DatabaseManagement {
 				accountInfoToMap.setCustomerId(cusId);
 				accountInfoToMap.setAccountNumber(accNo);
 				accountInfoToMap.setBalance(resultSet.getBigDecimal("balance"));
+				accountInfoToMap.setBranch(resultSet.getString("branch"));
 				accountList.add(accountInfoToMap);
 			}
 		}
@@ -145,23 +143,43 @@ public class DatabaseManagement {
 		return finalList;
 	}
 
-	public  long insertAccountInfoToTable(AccountDetails accInfo) {
+	public ArrayList insertAccountInfoToTable(AccountDetails accInfo) {
 		long accNum=0;
+		ResultSet res;
 		getConnection();
+		ArrayList finalList = new ArrayList();
 		try{
-			query= "insert into account_details(customer_id,balance) values (?,?)";
+			query= "insert into account_details(customer_id,balance,branch) values (?,?,?)";
 			prepStmt = conn.prepareStatement(query,Statement.RETURN_GENERATED_KEYS);
 				prepStmt.setInt(1, accInfo.getCustomerId());
 				prepStmt.setBigDecimal(2, accInfo.getBalance());
-				prepStmt.executeUpdate();
-				ResultSet res = prepStmt.getGeneratedKeys();
+			    prepStmt.setString(3, accInfo.getBranch());
+			    prepStmt.addBatch();
+			   int[] array= prepStmt.executeBatch();
+			for (Integer i:array) {
+				finalList.add(i);
+			}
+				res = prepStmt.getGeneratedKeys();
 				res.next();
 				accNum = res.getInt(1);
-				System.out.println("AccountNumber :" + accNum + "\t" + "Balance :" + accInfo.getBalance());
-			prepStmt.executeBatch();
+				finalList.add(accNum);
 		}
-		catch(Exception e){
-			e.printStackTrace();
+		
+		catch(BatchUpdateException e){
+			try {
+				int array[]=e.getUpdateCounts();
+				for (Integer i:array) {
+					finalList.add(i);
+				}
+				res= prepStmt.getGeneratedKeys();
+				while (res.next()) {
+					finalList.add(res.getInt(1));
+				}
+			} catch (Exception exception) {
+				exception.printStackTrace();
+			}
+		} catch (Exception exception) {
+			exception.printStackTrace();
 		}finally {
 			if (prepStmt !=null)
 				try {
@@ -171,14 +189,12 @@ public class DatabaseManagement {
 					e.printStackTrace();
 				}
 		}
-		System.out.println("Values inserted successfully");
-		System.out.println("----------------------------------");
-		return accNum;
+		return finalList;
 	}
 	public int deleteCustomer(int id){
 		int condition=0;
 		try{
-			query = "delete from customer_details where customer_id = ?";
+			query = "delete from customer_details where customer_id = ? ";
 			prepStmt = conn.prepareStatement(query);
 			prepStmt.setInt(1,id);
 			condition= prepStmt.executeUpdate();
@@ -199,6 +215,18 @@ public class DatabaseManagement {
 			System.out.println(e);
 		}
 		return condition;
+	}
+
+	public boolean withdrawal(BigDecimal amount){
+		try{
+			query = "update from account_details where balance =?";
+			prepStmt = conn.prepareStatement(query);
+			prepStmt.setBigDecimal(1,amount);
+			prepStmt.executeUpdate();
+		}catch(Exception e) {
+			System.out.println(e);
+		}
+		return true;
 	}
 
 	public static boolean closeConnection() throws Exception{
