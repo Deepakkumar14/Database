@@ -1,5 +1,7 @@
 package bank.database;
 
+import com.sun.corba.se.pept.transport.ConnectionCache;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,13 +11,13 @@ public class DatabaseManagement {
 	private static final String DRIVER =  "com.mysql.cj.jdbc.Driver";
 	private static final String URL = "jdbc:mysql://localhost:3306/bank1";
 	private static final String USERNAME = "root";
-	private static final String PASSWORD = "1234";
+	private static final String PASSWORD = "Deep@2000";
 	private  static Connection conn = null;
 	private static PreparedStatement prepStmt =null;
 	private static PreparedStatement prepStmt1 =null;
 	private  static Statement stmt=null;
 	private static ResultSet resultSet =null;
-
+	private static String query="";
 
 	public  void initializeConnection(){
 		try{
@@ -65,7 +67,7 @@ public class DatabaseManagement {
 
 
 	public  ArrayList<AccountDetails> dataRetrievalOfAccount(){
-		getConnection();
+		Connection conn=getConnection();
 		ArrayList<AccountDetails> accountList=new ArrayList<>();
 		try  {
 			Statement stmt = conn.createStatement();
@@ -94,12 +96,12 @@ public class DatabaseManagement {
 	}
 
 	public ArrayList insertCustomerInfoToTable(ArrayList<ArrayList> details)  {
-		getConnection();
+		Connection conn=getConnection();
 		ResultSet res;
 		int[] successRate;
 		ArrayList finalList = new ArrayList();
 		try{
-			String query = "insert into customer_details (full_name,city) values (?,?)";
+			query = "insert into customer_details (full_name,city) values (?,?)";
 			prepStmt1 = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 			for(int i=0;i< details.size();i++) {
 				CustomerDetails cusInfo = (CustomerDetails) details.get(i).get(0);
@@ -113,10 +115,8 @@ public class DatabaseManagement {
 			}
 			 res= prepStmt1.getGeneratedKeys();
 			while (res.next()) {
-				int cusId= res.getInt(1);
-				finalList.add(cusId);
+				finalList.add(res.getInt(1));
 			}
-			System.out.println(finalList);
 		}
 		catch(BatchUpdateException e){
 			try {
@@ -126,10 +126,8 @@ public class DatabaseManagement {
 				}
 				res= prepStmt1.getGeneratedKeys();
 				while (res.next()) {
-					int cusId= res.getInt(1);
-					finalList.add(cusId);
+					finalList.add(res.getInt(1));
 				}
-				System.out.println(finalList);
 			} catch (Exception exception) {
 				exception.printStackTrace();
 			}
@@ -144,8 +142,6 @@ public class DatabaseManagement {
 					e.printStackTrace();
 				}
 		}
-		System.out.println("Values inserted successfully");
-		System.out.println("----------------------------------");
 		return finalList;
 	}
 
@@ -153,8 +149,8 @@ public class DatabaseManagement {
 		long accNum=0;
 		getConnection();
 		try{
-			String query1 = "insert into account_details(customer_id,balance) values (?,?)";
-			prepStmt = conn.prepareStatement(query1,Statement.RETURN_GENERATED_KEYS);
+			query= "insert into account_details(customer_id,balance) values (?,?)";
+			prepStmt = conn.prepareStatement(query,Statement.RETURN_GENERATED_KEYS);
 				prepStmt.setInt(1, accInfo.getCustomerId());
 				prepStmt.setBigDecimal(2, accInfo.getBalance());
 				prepStmt.executeUpdate();
@@ -179,7 +175,31 @@ public class DatabaseManagement {
 		System.out.println("----------------------------------");
 		return accNum;
 	}
+	public int deleteCustomer(int id){
+		int condition=0;
+		try{
+			query = "delete from customer_details where customer_id = ?";
+			prepStmt = conn.prepareStatement(query);
+			prepStmt.setInt(1,id);
+			condition= prepStmt.executeUpdate();
+		}catch(Exception e) {
+			System.out.println(e);
+		}
+		return condition;
+	}
 
+	public int deleteAccount(long accNumber){
+		int condition=0;
+		try{
+			query = "delete from account_details where account_no = ?";
+			prepStmt = conn.prepareStatement(query);
+			prepStmt.setLong(1,accNumber);
+			condition= prepStmt.executeUpdate();
+		}catch(Exception e) {
+			System.out.println(e);
+		}
+		return condition;
+	}
 
 	public static boolean closeConnection() throws Exception{
 		conn.close();

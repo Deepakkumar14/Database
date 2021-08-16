@@ -54,16 +54,37 @@ public class Helper{
                 return "Invalid account number";
             }
         }
-
-
-    public void insertNewCustomerDetails(ArrayList<ArrayList> details) {
+    public void checkPoint(ArrayList<ArrayList> details){
         ArrayList<Integer> successRate= databaseManagement.insertCustomerInfoToTable(details);
+        int size=details.size();
+       ArrayList<Integer> removeindex=new ArrayList<>();
+        ArrayList<ArrayList> details1=details;
+        ArrayList<CustomerDetails> successAndFailure=new ArrayList<>();
+        if(successRate.size()==details.size()*2) {
+            insertNewCustomerDetails(details,successRate,size);
+        }
+        else {
+            for(int i=0;i< details.size();i++) {
+                if (successRate.get(i) < 0) {
+                    successAndFailure.add((CustomerDetails) details.get(i).get(0));
+                    removeindex.add(i);
+                }
+            }
+            for (int i= removeindex.size()-1;i>=0;i--) {
+                int value=removeindex.get(i);
+                details1.remove(value);
+            }
+            System.out.println("Failed customer details to add");
+            System.out.println(successAndFailure.toString());
+            insertNewCustomerDetails(details1,successRate,size);
+       }
+    }
 
-
+    public void insertNewCustomerDetails(ArrayList<ArrayList> details,ArrayList<Integer> successRate,int size) {
         for(int i=0;i< details.size();i++) {
             CustomerDetails cusInfo = (CustomerDetails) details.get(i).get(0);
             AccountDetails accInfo = (AccountDetails) details.get(i).get(1);
-            int cusId=customerId.get(i);
+            int cusId=successRate.get(i+size);
             cusInfo.setCustomerId(cusId);
             accInfo.setCustomerId(cusId);
             insertNewAccountDetails(accInfo);
@@ -77,9 +98,26 @@ public class Helper{
         CacheMemory.INSTANCE.setAccountMap(accDetails);
        }
 
+    public int deleteCustomer(int id){
+
+        int condition =databaseManagement.deleteCustomer(id);
+        HashMap<Integer,CustomerDetails>customerMap = CacheMemory.INSTANCE.customerDetails();
+        customerMap.remove(id);
+        HashMap<Integer,HashMap<Integer, AccountDetails>>accountMap =CacheMemory.INSTANCE.accountDetails();
+        accountMap.remove(id);
+        return condition;
+    }
+    public int deleteAcccount(int id,int accNum){
+
+        int condition = databaseManagement.deleteAccount(accNum);
+        HashMap<Integer,HashMap<Integer, AccountDetails>>accountMap =CacheMemory.INSTANCE.accountDetails();
+        HashMap<Integer, AccountDetails>inner = accountMap.get(id);
+        inner.remove(accNum);
+        return condition;
+    }
+
        public boolean closeConnection() throws Exception {
            return DatabaseManagement.closeConnection();
-
        }
     }
 

@@ -19,6 +19,7 @@ public enum CacheMemory {
     public CustomerDetails customerDetails(int id) {
         return customerMap.get(id);
     }
+
     public void setCustomerDetails(CustomerDetails customerDetails) {
         int cusId=customerDetails.getCustomerId();
         customerMap.put(cusId,customerDetails);

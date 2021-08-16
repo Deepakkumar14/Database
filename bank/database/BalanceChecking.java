@@ -19,7 +19,8 @@ public class BalanceChecking {
 			System.out.println("1.Existing user-Need to check Balance");
 			System.out.println("2.Existing user-Need to add new account");
 			System.out.println("3.New Customer-Need to Enter Customer details");
-			System.out.println("4. Exit");
+			System.out.println("4.To Delete an  Customer or account");
+			System.out.println("5. Exit");
 			System.out.println();
 			System.out.println("Enter your choice");
 			int choice = input.nextInt();
@@ -97,11 +98,15 @@ public class BalanceChecking {
 					details.add(innerArrayList);
 
 				}
-				helper.insertNewCustomerDetails(details);
+				helper.checkPoint(details);
 				System.out.println();
 			}
 			//----------------------------------------------------------------------------------------------
-			else if (choice == 4) {
+			else if(choice ==4){
+				System.out.println("Enter 1 To delete customer  \nEnter 2 To delete particular account\n");
+			}
+			//----------------------------------------------------------------------------------------------
+			else if (choice == 5) {
 				boolean bool=helper.closeConnection();
 				if(bool) {
 					System.out.println("Connection is closed: "+bool);
