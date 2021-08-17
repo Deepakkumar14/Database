@@ -103,7 +103,7 @@ public class Helper{
             ArrayList<Object> accountNum =databaseManagement.insertAccountInfoToTable(accInfo);
             if((Integer)accountNum.get(0)>0) {
                 accInfo.setAccountNumber((Long)accountNum.get(1));
-                String value=cusInfo.toString()+accInfo.toString();
+                String value=cusInfo + accInfo.toString();
                 successAndFailure.put(value,"Successfully added both details");
                 CacheMemory.INSTANCE.setCustomerDetails(cusInfo);
                 CacheMemory.INSTANCE.setAccountMap(accInfo);
