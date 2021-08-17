@@ -1,5 +1,6 @@
 package bank.database;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 
 public enum CacheMemory {
@@ -46,4 +47,12 @@ public enum CacheMemory {
             accountMap.put(cusId, accountDetailsHashMap);
         }
     }
- }
+
+    public void updateBalance(TransactionDetails transDetails, BigDecimal total) {
+        HashMap<Long,AccountDetails> account=accountMap.get(transDetails.getCustomerId());
+        AccountDetails accInfo  =account.get(transDetails.getAccountNumber());
+        accInfo.setBalance(total);
+    }
+
+
+}

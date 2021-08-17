@@ -40,7 +40,7 @@ public class DatabaseManagement {
 		ArrayList<CustomerDetails> customerList = new ArrayList<>();
 		try {
 			Statement stmt = conn.createStatement();
-			resultSet = stmt.executeQuery("select * from  customer_details");
+			resultSet = stmt.executeQuery("select * from  customer_details where status='Active'");
 			while (resultSet.next()) {
 				CustomerDetails customerInfoToMap = new CustomerDetails();
 				int cusId = resultSet.getInt("customer_id");
@@ -68,7 +68,7 @@ public class DatabaseManagement {
 		ArrayList<AccountDetails> accountList=new ArrayList<>();
 		try  {
 			Statement stmt = conn.createStatement();
-			resultSet= stmt.executeQuery("select * from account_details");
+			resultSet= stmt.executeQuery("select * from account_details where status='Active'");
 			while(resultSet.next()){
 				AccountDetails accountInfoToMap=new AccountDetails();
 				int cusId=resultSet.getInt("customer_id");
@@ -191,6 +191,7 @@ public class DatabaseManagement {
 		}
 		return finalList;
 	}
+	//To delete customer id that is entered during customer insertion but failed during account insertion
 	public int deleteCustomer(int id){
 		int condition=0;
 		try{
@@ -203,30 +204,94 @@ public class DatabaseManagement {
 		}
 		return condition;
 	}
-
-	public int deleteAccount(long accNumber){
+	//To set the customer id to deactive mode
+	public int updateCustomer(int id){
+		Connection conn=getConnection();
 		int condition=0;
 		try{
-			query = "delete from account_details where account_no = ?";
+			conn.setAutoCommit(false);
+			query = "update customer_details set status ='Deactive' where customer_id = ? ";
 			prepStmt = conn.prepareStatement(query);
-			prepStmt.setLong(1,accNumber);
+			prepStmt.setInt(1,id);
 			condition= prepStmt.executeUpdate();
+			conn.commit();
 		}catch(Exception e) {
+			try{
+				conn.rollback();
+			} catch (SQLException exception) {
+				exception.printStackTrace();
+			}
 			System.out.println(e);
 		}
 		return condition;
 	}
-
-	public boolean withdrawal(int cusId,long accNum,BigDecimal amount){
+	//To set the account number to deactive mode
+	public int deleteAccount(long accNumber){
+		Connection conn=getConnection();
+		int condition=0;
 		try{
-			query = "update from account_details set balance=? where customer_id =? AND account_num=?";
+			conn.setAutoCommit(false);
+			query = "update account_details set status ='Deactive' where account_number= ? ";
 			prepStmt = conn.prepareStatement(query);
-			prepStmt.setBigDecimal(1,amount);
-			prepStmt.setInt(2,cusId);
-			prepStmt.setLong(3,accNum);
-			prepStmt.executeUpdate();
+			prepStmt.setLong(1,accNumber);
+			condition= prepStmt.executeUpdate();
+			conn.commit();
 		}catch(Exception e) {
 			System.out.println(e);
+			try{
+				conn.rollback();
+			} catch (SQLException exception) {
+				exception.printStackTrace();
+			}
+		}
+		return condition;
+	}
+
+	public boolean withdrawalAndDeposit(TransactionDetails transDetails, String type){
+		Connection conn=getConnection();
+		try{
+			conn.setAutoCommit(false);
+			query = "INSERT INTO transaction_details(customer_id,account_number,transaction_type,transaction_amount,date,status)values(?,?,?,?,null,?)";
+			prepStmt = conn.prepareStatement(query);
+			prepStmt.setInt(1,transDetails.getCustomerId());
+			prepStmt.setLong(2,transDetails.getAccountNumber());
+			prepStmt.setString(3,transDetails.getTransactionType());
+			prepStmt.setBigDecimal(4,transDetails.getTransactionAmount());
+			prepStmt.setString(5,type);
+			prepStmt.executeUpdate();
+			conn.commit();
+		}catch(Exception e) {
+			System.out.println(e);
+			try {
+				conn.rollback();
+				return false;
+			} catch (SQLException exception) {
+				exception.printStackTrace();
+			}
+		}
+		return true;
+	}
+
+
+	public Boolean updateBalance(TransactionDetails transDetails, BigDecimal total) {
+		Connection conn=getConnection();
+		try{
+			conn.setAutoCommit(false);
+			query = "update account_details set balance=? where customer_id =? AND account_number=?";
+			prepStmt = conn.prepareStatement(query);
+			prepStmt.setInt(2,transDetails.getCustomerId());
+			prepStmt.setLong(3,transDetails.getAccountNumber());
+			prepStmt.setBigDecimal(1,total);
+			prepStmt.executeUpdate();
+			conn.commit();
+		}catch(Exception e) {
+			System.out.println(e);
+			try {
+				conn.rollback();
+				return false;
+			} catch (SQLException exception) {
+				exception.printStackTrace();
+			}
 		}
 		return true;
 	}
@@ -237,9 +302,7 @@ public class DatabaseManagement {
 		return bool;
 	}
 
-	public int deposit(int id, long accNum, BigDecimal total) {
-
-	}
 }
+
 
 

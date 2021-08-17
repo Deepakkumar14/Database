@@ -66,12 +66,12 @@ public class Helper{
                 return "Invalid account number";
             }
         }
-    public HashMap<Object,String> checkPoint(ArrayList<ArrayList> details){
+    public HashMap<String, String> checkPoint(ArrayList<ArrayList> details){
         ArrayList<Integer> successRate= databaseManagement.insertCustomerInfoToTable(details);
         int size=details.size();
        ArrayList<Integer> removeIndex=new ArrayList<>();
         ArrayList<ArrayList> details1=details;
-        HashMap<Object,String> successAndFailure=new HashMap<>();
+        HashMap<String,String> successAndFailure=new HashMap<>();
         if(successRate.size()==details.size()*2) {
             insertNewCustomerDetails(details,successRate,size,successAndFailure);
         }
@@ -79,7 +79,8 @@ public class Helper{
             for(int i=0;i< details.size();i++) {
                 if (successRate.get(i) < 0) {
                     CustomerDetails cusInfo=(CustomerDetails) details1.get(i).get(0);
-                    successAndFailure.put(cusInfo,"Failure");
+                    String value=cusInfo.toString();
+                    successAndFailure.put(value,"Failed to add customer details");
                     removeIndex.add(i);
                 }
             }
@@ -100,15 +101,16 @@ public class Helper{
             cusInfo.setCustomerId(cusId);
             accInfo.setCustomerId(cusId);
             ArrayList<Object> accountNum =databaseManagement.insertAccountInfoToTable(accInfo);
-            System.out.println(accountNum);
             if((Integer)accountNum.get(0)>0) {
                 accInfo.setAccountNumber((Long)accountNum.get(1));
-                successAndFailure.put(cusInfo,"Success");
+                String value=cusInfo.toString()+accInfo.toString();
+                successAndFailure.put(value,"Successfully added both details");
                 CacheMemory.INSTANCE.setCustomerDetails(cusInfo);
                 CacheMemory.INSTANCE.setAccountMap(accInfo);
             }
             else{
-                successAndFailure.put(accInfo,"Failure");
+                String value=accInfo.toString();
+                successAndFailure.put(value,"Failed to add account details ");
                 databaseManagement.deleteCustomer(accInfo.getCustomerId());
             }
         }
@@ -120,52 +122,76 @@ public class Helper{
         if((Integer)successRate.get(0)>0) {
             accDetails.setAccountNumber((Long)successRate.get(1));
             CacheMemory.INSTANCE.setAccountMap(accDetails);
-            return "Account is added" + accDetails;
+            return "Account is added"+"\t"+ accDetails;
         }
         else{
-            return "Account is not added" + accDetails;
+            return "Account is not added" +"\t"+ accDetails;
         }
     }
 
     public boolean deleteCustomer(int id){
-        int condition=databaseManagement.deleteCustomer(id);
-        Boolean bool=CacheMemory.INSTANCE.deleteCustomer(id);
-        return bool;
-    }
-    public boolean deleteAcccount(int id,int accNum){
-        int condition = databaseManagement.deleteAccount(accNum);
-        Boolean bool=CacheMemory.INSTANCE.deleteAccount(id,accNum);
-        return bool;
+        int condition=databaseManagement.updateCustomer(id);
+        if(condition>=0) {
+            Boolean bool = CacheMemory.INSTANCE.deleteCustomer(id);
+            return bool;
+        }
+       else{
+           return false;
+        }
     }
 
-    public boolean withdrawal(int id, long accNum, BigDecimal withdrawalAmount){
-        BigDecimal balance=getBalance(id,accNum);
-        int comparedValue=balance.compareTo(withdrawalAmount);
-        if(comparedValue>1){
-            BigDecimal total=balance.subtract(withdrawalAmount);
-           Boolean bool=  databaseManagement.withdrawal(id,accNum,withdrawalAmount);
-            return  bool;
+    public boolean deleteAccount(int id,long accNum){
+        int condition = databaseManagement.deleteAccount(accNum);
+        if(condition>=0) {
+            Boolean bool=CacheMemory.INSTANCE.deleteAccount(id,accNum);
+            return bool;
         }
         else{
             return false;
         }
     }
 
-    public boolean deposit(int id,long accNum,BigDecimal amount){
-        BigDecimal balance =getBalance(id,accNum);
-        BigDecimal total = balance.add(amount);
-        int rate = databaseManagement.deposit(id,accNum,total);
-        if(rate>0){
-            return true;
+    public boolean withdrawal(TransactionDetails transDetails){
+        BigDecimal balance=getBalance(transDetails);
+        BigDecimal withdrawalAmount=transDetails.getTransactionAmount();
+        int comparedValue=balance.compareTo(withdrawalAmount);
+        if(comparedValue>=0){
+            BigDecimal total=balance.subtract(withdrawalAmount);
+            String type="Withdrawal";
+           Boolean bool=  databaseManagement.withdrawalAndDeposit(transDetails,type);
+           if(bool){
+               Boolean bool1=databaseManagement.updateBalance(transDetails,total);
+               CacheMemory.INSTANCE.updateBalance(transDetails,total);
+               return  bool1;
+           }
+            else{
+                return false;
+           }
         }
-        else
+        else{
             return false;
+        }
     }
+    public Boolean deposit(TransactionDetails transDetails) {
+        BigDecimal balance=getBalance(transDetails);
+        BigDecimal depositAmount=transDetails.getTransactionAmount();
+        BigDecimal total=balance.add(depositAmount);
+        String type="Deposit";
+            Boolean bool=  databaseManagement.withdrawalAndDeposit(transDetails,type);
+            if(bool){
+                Boolean bool1=databaseManagement.updateBalance(transDetails,total);
+                CacheMemory.INSTANCE.updateBalance(transDetails,total);
+                return  bool1;
+            }
+            else{
+                return false;
+            }
+        }
 
-    public BigDecimal getBalance(int id, long accNum){
+    public BigDecimal getBalance(TransactionDetails transDetails){
         HashMap<Integer,HashMap<Long,AccountDetails>> accountMap=CacheMemory.INSTANCE.accountBoolean();
-        HashMap<Long,AccountDetails>accountDetails=accountMap.get(id);
-        AccountDetails accInfo=accountDetails.get(accNum);
+        HashMap<Long,AccountDetails>accountDetails=accountMap.get(transDetails.getCustomerId());
+        AccountDetails accInfo=accountDetails.get(transDetails.getAccountNumber());
         BigDecimal balance=accInfo.getBalance();
         return  balance;
     }
@@ -173,7 +199,9 @@ public class Helper{
        public boolean closeConnection() throws Exception {
            return DatabaseManagement.closeConnection();
        }
-    }
+
+
+}
 
 
 
