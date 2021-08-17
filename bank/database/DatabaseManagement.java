@@ -217,11 +217,13 @@ public class DatabaseManagement {
 		return condition;
 	}
 
-	public boolean withdrawal(BigDecimal amount){
+	public boolean withdrawal(int cusId,long accNum,BigDecimal amount){
 		try{
-			query = "update from account_details where balance =?";
+			query = "update from account_details set balance=? where customer_id =? AND account_num=?";
 			prepStmt = conn.prepareStatement(query);
 			prepStmt.setBigDecimal(1,amount);
+			prepStmt.setInt(2,cusId);
+			prepStmt.setLong(3,accNum);
 			prepStmt.executeUpdate();
 		}catch(Exception e) {
 			System.out.println(e);
@@ -235,6 +237,9 @@ public class DatabaseManagement {
 		return bool;
 	}
 
+	public int deposit(int id, long accNum, BigDecimal total) {
+
+	}
 }
 
 

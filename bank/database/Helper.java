@@ -138,21 +138,31 @@ public class Helper{
         return bool;
     }
 
-    public boolean withdrawal(int id, int accNum, BigDecimal withdrawalAmount){
+    public boolean withdrawal(int id, long accNum, BigDecimal withdrawalAmount){
         BigDecimal balance=getBalance(id,accNum);
         int comparedValue=balance.compareTo(withdrawalAmount);
         if(comparedValue>1){
             BigDecimal total=balance.subtract(withdrawalAmount);
-           Boolean bool=  databaseManagement.withdrawal(withdrawalAmount);
+           Boolean bool=  databaseManagement.withdrawal(id,accNum,withdrawalAmount);
             return  bool;
         }
         else{
             return false;
         }
-
     }
 
-    public BigDecimal getBalance(int id, int accNum){
+    public boolean deposit(int id,long accNum,BigDecimal amount){
+        BigDecimal balance =getBalance(id,accNum);
+        BigDecimal total = balance.add(amount);
+        int rate = databaseManagement.deposit(id,accNum,total);
+        if(rate>0){
+            return true;
+        }
+        else
+            return false;
+    }
+
+    public BigDecimal getBalance(int id, long accNum){
         HashMap<Integer,HashMap<Long,AccountDetails>> accountMap=CacheMemory.INSTANCE.accountBoolean();
         HashMap<Long,AccountDetails>accountDetails=accountMap.get(id);
         AccountDetails accInfo=accountDetails.get(accNum);

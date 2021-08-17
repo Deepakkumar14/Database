@@ -20,7 +20,8 @@ public class BalanceChecking {
 			System.out.println("3.New Customer-Need to Enter Customer details");
 			System.out.println("4.To Delete an  Customer or account");
 			System.out.println("5.To withdraw amount from particular account");
-			System.out.println("6. Exit");
+			System.out.println("6.To withdraw amount from particular account");
+			System.out.println("7. Exit");
 			System.out.println();
 			System.out.println("Enter your choice");
 			int choice = input.nextInt();
@@ -127,18 +128,27 @@ public class BalanceChecking {
 			else if(choice ==5){
 				System.out.println("Enter customerId");
 				int customerId = input.nextInt();
-				System.out.println("Enter the account number from which you have to withdraw");
-				long accountNum = input.nextLong();
-					if(helper.retrieveAccountBooleanValue(customerId,accountNum)){
+				if(helper.retrieveBooleanValue(customerId)) {
+					System.out.println("Enter the account number from which you have to withdraw");
+					long accountNum = input.nextLong();
+					if (helper.retrieveAccountBooleanValue(customerId, accountNum)) {
 						System.out.print("Enter the amount to withdraw: ");
 						BigDecimal amount = input.nextBigDecimal();
-						if()
-
+						Boolean bool = helper.withdrawal(customerId, accountNum, amount);
+						if (bool) {
+							System.out.println("Withdrawal of " + amount + " is successful");
+						} else {
+							System.out.println("Insufficient balance");
+						}
 					}
-
-
-			}
-
+					else {
+						System.out.println("Invalid account number");
+					}
+				}
+				else{
+					System.out.println("Invalid customer id");
+					}
+			    }
 			//----------------------------------------------------------------------------------------------
 			else if (choice == 6) {
 				boolean bool=helper.closeConnection();
