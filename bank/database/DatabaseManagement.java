@@ -171,10 +171,6 @@ public class DatabaseManagement {
 				for (Integer i:array) {
 					finalList.add(i);
 				}
-				res= prepStmt.getGeneratedKeys();
-				while (res.next()) {
-					finalList.add(res.getInt(1));
-				}
 			} catch (Exception exception) {
 				exception.printStackTrace();
 			}
@@ -201,6 +197,14 @@ public class DatabaseManagement {
 			condition= prepStmt.executeUpdate();
 		}catch(Exception e) {
 			System.out.println(e);
+		}finally {
+			if (prepStmt !=null)
+				try {
+					prepStmt.close();
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
 		}
 		return condition;
 	}
@@ -210,10 +214,13 @@ public class DatabaseManagement {
 		int condition=0;
 		try{
 			conn.setAutoCommit(false);
-			query = "update customer_details set status ='Deactive' where customer_id = ? ";
-			prepStmt = conn.prepareStatement(query);
-			prepStmt.setInt(1,id);
-			condition= prepStmt.executeUpdate();
+			query="update account_details set status ='Deactive' where customer_id = ?";
+			for(int i=0;i<2;i++) {
+				prepStmt = conn.prepareStatement(query);
+				prepStmt.setInt(1, id);
+				condition = prepStmt.executeUpdate();
+				query = "update customer_details set status ='Deactive' where customer_id= ?";
+			}
 			conn.commit();
 		}catch(Exception e) {
 			try{
@@ -222,6 +229,14 @@ public class DatabaseManagement {
 				exception.printStackTrace();
 			}
 			System.out.println(e);
+		}finally {
+			if (prepStmt !=null)
+				try {
+					prepStmt.close();
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
 		}
 		return condition;
 	}
@@ -231,7 +246,7 @@ public class DatabaseManagement {
 		int condition=0;
 		try{
 			conn.setAutoCommit(false);
-			query = "update account_details set status ='Deactive' where account_number= ? ";
+			query = "update account_details set status ='Deactive' where account_number= ?";
 			prepStmt = conn.prepareStatement(query);
 			prepStmt.setLong(1,accNumber);
 			condition= prepStmt.executeUpdate();
@@ -243,6 +258,14 @@ public class DatabaseManagement {
 			} catch (SQLException exception) {
 				exception.printStackTrace();
 			}
+		}finally {
+			if (prepStmt !=null)
+				try {
+					prepStmt.close();
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
 		}
 		return condition;
 	}
@@ -268,6 +291,14 @@ public class DatabaseManagement {
 			} catch (SQLException exception) {
 				exception.printStackTrace();
 			}
+		}finally {
+			if (prepStmt !=null)
+				try {
+					prepStmt.close();
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
 		}
 		return true;
 	}
@@ -292,6 +323,14 @@ public class DatabaseManagement {
 			} catch (SQLException exception) {
 				exception.printStackTrace();
 			}
+		}finally {
+			if (prepStmt !=null)
+				try {
+					prepStmt.close();
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
 		}
 		return true;
 	}

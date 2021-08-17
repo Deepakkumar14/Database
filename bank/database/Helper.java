@@ -131,7 +131,7 @@ public class Helper{
 
     public boolean deleteCustomer(int id){
         int condition=databaseManagement.updateCustomer(id);
-        if(condition>=0) {
+        if(condition>0) {
             Boolean bool = CacheMemory.INSTANCE.deleteCustomer(id);
             return bool;
         }

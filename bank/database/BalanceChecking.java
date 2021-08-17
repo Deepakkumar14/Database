@@ -94,6 +94,8 @@ public class BalanceChecking {
 					System.out.println("Enter the user city");
 					customerDetails.setCity(input.nextLine());
 
+					System.out.println("Enter the details for account "+i);
+
 					System.out.println("Enter the account balance");
 					accountDetails.setBalance(input.nextBigDecimal());
 					input.nextLine();
