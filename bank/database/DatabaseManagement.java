@@ -208,6 +208,7 @@ public class DatabaseManagement {
 		}
 		return condition;
 	}
+
 	//To set the customer id to deactive mode
 	public int updateCustomer(int id){
 		Connection conn=getConnection();
