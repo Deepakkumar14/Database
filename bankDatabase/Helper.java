@@ -1,37 +1,63 @@
-package bank.database;
+package bankDatabase;
 
+
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Properties;
 
 public class Helper{
-    DatabaseManagement databaseManagement=new DatabaseManagement();
+
+    private Persistence persistence;
+    public Helper(){
+        try {
+            FileReader file=new FileReader("Properties.properties");
+            Properties properties=new Properties();
+            properties.load(file);
+            String value=properties.getProperty("PersistenceObject");
+            persistence= (Persistence) Class.forName(value).newInstance();
+            callingDatabaseForCustomer();
+            callingDatabaseForAccount();
+        } catch (IOException|ClassNotFoundException|InstantiationException|IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void callingDatabaseForAccount() {
-        ArrayList<AccountDetails> accountList= databaseManagement.dataRetrievalOfAccount();
+        ArrayList<AccountDetails> accountList= persistence.dataRetrievalOfAccount();
         for(int i=0;i<accountList.size();i++){
             CacheMemory.INSTANCE.setAccountMap(accountList.get(i));
         }
     }
 
     public void callingDatabaseForCustomer(){
-        ArrayList<CustomerDetails> customerList = databaseManagement.dataRetrievalOfCustomer();
+        ArrayList<CustomerDetails> customerList = persistence.dataRetrievalOfCustomer();
         for(int i=0;i<customerList.size();i++){
             CacheMemory.INSTANCE.setCustomerDetails(customerList.get(i));
         }
     }
     public boolean retrieveBooleanValue(int id){
-        return CacheMemory.INSTANCE.accountBoolean().containsKey(id);
+        if(id!=0) {
+            return CacheMemory.INSTANCE.accountBoolean().containsKey(id);
+        }
+        else{
+            return false;
+        }
     }
 
     public boolean retrieveAccountBooleanValue(int id,long accountNum){
-        HashMap<Integer,HashMap<Long,AccountDetails>> accountMap=CacheMemory.INSTANCE.accountBoolean();
-       if(accountMap.containsKey(id)){
-           HashMap<Long,AccountDetails>accountDetails=accountMap.get(id);
-           if(accountDetails.containsKey(accountNum)){
-               return true;
-           }
-       }
+        if(id!=0&&accountNum!=0) {
+            HashMap<Integer, HashMap<Long, AccountDetails>> accountMap = CacheMemory.INSTANCE.accountBoolean();
+            if (accountMap.containsKey(id)) {
+                HashMap<Long, AccountDetails> accountDetails = accountMap.get(id);
+                if (accountDetails.containsKey(accountNum)) {
+                    return true;
+                }
+            }
+        }
            return false;
     }
 
@@ -67,13 +93,13 @@ public class Helper{
             }
         }
     public HashMap<String, String> checkPoint(ArrayList<ArrayList> details){
-        ArrayList<Integer> successRate= databaseManagement.insertCustomerInfoToTable(details);
+        ArrayList<Integer> successRate= persistence.insertCustomerInfoToTable(details);
         int size=details.size();
        ArrayList<Integer> removeIndex=new ArrayList<>();
         ArrayList<ArrayList> details1=details;
         HashMap<String,String> successAndFailure=new HashMap<>();
         if(successRate.size()==details.size()*2) {
-            insertNewCustomerDetails(details,successRate,size,successAndFailure);
+            successAndFailure=insertNewCustomerDetails(details,successRate,size,successAndFailure);
         }
         else {
             for(int i=0;i< details.size();i++) {
@@ -88,7 +114,7 @@ public class Helper{
                 int value=removeIndex.get(i);
                 details1.remove(value);
             }
-            insertNewCustomerDetails(details1,successRate,size,successAndFailure);
+            successAndFailure=insertNewCustomerDetails(details1,successRate,size,successAndFailure);
        }
         return successAndFailure;
     }
@@ -100,7 +126,7 @@ public class Helper{
             int cusId=successRate.get(i+size);
             cusInfo.setCustomerId(cusId);
             accInfo.setCustomerId(cusId);
-            ArrayList<Object> accountNum =databaseManagement.insertAccountInfoToTable(accInfo);
+            ArrayList<Object> accountNum = persistence.insertAccountInfoToTable(accInfo);
             if((Integer)accountNum.get(0)>0) {
                 accInfo.setAccountNumber((Long)accountNum.get(1));
                 String value=cusInfo + accInfo.toString();
@@ -111,14 +137,14 @@ public class Helper{
             else{
                 String value=accInfo.toString();
                 successAndFailure.put(value,"Failed to add account details ");
-                databaseManagement.deleteCustomer(accInfo.getCustomerId());
+                persistence.deleteCustomer(accInfo.getCustomerId());
             }
         }
         return successAndFailure;
     }
 
     public String insertNewAccountDetails(AccountDetails accDetails) {
-        ArrayList<Object> successRate=databaseManagement.insertAccountInfoToTable(accDetails);
+        ArrayList<Object> successRate= persistence.insertAccountInfoToTable(accDetails);
         if((Integer)successRate.get(0)>0) {
             accDetails.setAccountNumber((Long)successRate.get(1));
             CacheMemory.INSTANCE.setAccountMap(accDetails);
@@ -130,9 +156,9 @@ public class Helper{
     }
 
     public boolean deleteCustomer(int id){
-        int condition=databaseManagement.updateCustomer(id);
+        int condition= persistence.updateCustomer(id);
         if(condition>0) {
-            Boolean bool = CacheMemory.INSTANCE.deleteCustomer(id);
+            boolean bool = CacheMemory.INSTANCE.deleteCustomer(id);
             return bool;
         }
        else{
@@ -141,9 +167,9 @@ public class Helper{
     }
 
     public boolean deleteAccount(int id,long accNum){
-        int condition = databaseManagement.deleteAccount(accNum);
+        int condition = persistence.deleteAccount(accNum);
         if(condition>=0) {
-            Boolean bool=CacheMemory.INSTANCE.deleteAccount(id,accNum);
+            boolean bool=CacheMemory.INSTANCE.deleteAccount(id,accNum);
             return bool;
         }
         else{
@@ -158,9 +184,9 @@ public class Helper{
         if(comparedValue>=0){
             BigDecimal total=balance.subtract(withdrawalAmount);
             String type="Withdrawal";
-           Boolean bool=  databaseManagement.withdrawalAndDeposit(transDetails,type);
+           boolean bool=  persistence.withdrawalAndDeposit(transDetails,type);
            if(bool){
-               Boolean bool1=databaseManagement.updateBalance(transDetails,total);
+               boolean bool1= persistence.updateBalance(transDetails,total);
                CacheMemory.INSTANCE.updateBalance(transDetails,total);
                return  bool1;
            }
@@ -172,14 +198,14 @@ public class Helper{
             return false;
         }
     }
-    public Boolean deposit(TransactionDetails transDetails) {
+    public boolean deposit(TransactionDetails transDetails) {
         BigDecimal balance=getBalance(transDetails);
         BigDecimal depositAmount=transDetails.getTransactionAmount();
         BigDecimal total=balance.add(depositAmount);
         String type="Deposit";
-            Boolean bool=  databaseManagement.withdrawalAndDeposit(transDetails,type);
+            boolean bool=  persistence.withdrawalAndDeposit(transDetails,type);
             if(bool){
-                Boolean bool1=databaseManagement.updateBalance(transDetails,total);
+                boolean bool1= persistence.updateBalance(transDetails,total);
                 CacheMemory.INSTANCE.updateBalance(transDetails,total);
                 return  bool1;
             }
@@ -196,8 +222,8 @@ public class Helper{
         return  balance;
     }
 
-       public boolean closeConnection() throws Exception {
-           return DatabaseManagement.closeConnection();
+       public boolean closeConnection() {
+           return persistence.closeConnection();
        }
 
 
