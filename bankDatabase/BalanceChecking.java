@@ -9,6 +9,8 @@ public class BalanceChecking {
 	public static void main(String[] args){
 		BalanceChecking balanceChecking= new BalanceChecking();
 		helper.objectCreation();
+		helper.callingDatabaseForCustomer();
+		helper.callingDatabaseForAccount();
 		balanceChecking.userChoice();
 	}
 
@@ -19,7 +21,8 @@ public class BalanceChecking {
 			System.out.println("3.New Customer-Need to Enter Customer details");
 			System.out.println("4.To Delete an  Customer or account");
 			System.out.println("5.Amount Transaction(Withdrawal or Deposit)");
-			System.out.println("6. Exit");
+			System.out.println("6.To activate the account");
+			System.out.println("7. Exit");
 			System.out.println();
 			System.out.println("Enter your choice");
 			int choice = input.nextInt();
@@ -216,6 +219,17 @@ public class BalanceChecking {
 			    }
 			//----------------------------------------------------------------------------------------------
 			else if (choice == 6) {
+				System.out.println("Enter customerId");
+				int customerId = input.nextInt();
+				if(helper.activateAccounts().containsKey(customerId)){
+					System.out.println("Enter account number");
+					long accNum = input.nextLong();
+
+				}
+
+			}
+			//----------------------------------------------------------------------------------------------
+			else if (choice == 7) {
 				boolean bool=helper.closeConnection();
 				if(bool) {
 					System.out.println("Connection is closed ");

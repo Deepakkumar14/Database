@@ -2,6 +2,7 @@ package bankDatabase;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public interface Persistence {
 
@@ -17,12 +18,15 @@ public interface Persistence {
     int deleteCustomer(int id);
 
     //To set the customer id to deactive mode
-    int updateAllAccounts(int id);
+    int deactivateAllAccounts(int id);
 
-    int updateCustomer(int id);
+    int deactivateCustomer(int id);
+
+    //To retrieve all details both active and inactive
+    HashMap<Integer, HashMap<Long, String>> dataRetrievalAllCustomer();
 
     //To set the account number to deactive mode
-    int deleteAccount(long accNumber);
+    int deactivateAccount(long accNumber);
 
     boolean withdrawalAndDeposit(TransactionDetails transDetails, String type);
 

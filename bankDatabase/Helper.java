@@ -1,6 +1,5 @@
 package bankDatabase;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 
 import java.io.IOException;
@@ -21,8 +20,6 @@ public class Helper{
                 properties.load(file);
                 String value = properties.getProperty("PersistenceObject");
                 persistence = (Persistence) Class.forName(value).newInstance();
-                callingDatabaseForCustomer();
-                callingDatabaseForAccount();
             }
         } catch (IOException|ClassNotFoundException|InstantiationException|IllegalAccessException  e) {
             System.out.println("Database object not created!!!Check the properties file location");
@@ -67,7 +64,6 @@ public class Helper{
         }
            return false;
     }
-
 
     public String retrieveCustomerDetails(int id) {
 
@@ -162,8 +158,8 @@ public class Helper{
     }
 
     public boolean updateAllAccounts(int id){
-        int condition= persistence.updateAllAccounts(id);
-        persistence.updateCustomer(id);
+        int condition= persistence.deactivateAllAccounts(id);
+        persistence.deactivateCustomer(id);
         if(condition>0) {
             boolean bool = CacheMemory.INSTANCE.deleteCustomer(id);
             return bool;
@@ -174,12 +170,12 @@ public class Helper{
     }
 
     public boolean updateAccount(int id, long accNum){
-        int condition = persistence.deleteAccount(accNum);
-        if(condition>=0) {
+        int condition = persistence.deactivateAccount(accNum);
+        if(condition>0) {
             boolean bool=CacheMemory.INSTANCE.deleteAccount(id,accNum);
                 HashMap<Long,AccountDetails> accountDetails=CacheMemory.INSTANCE.accountDetails(id);
                 if(accountDetails.size()==0){
-                  persistence.updateCustomer(id);
+                  persistence.deactivateCustomer(id);
                   CacheMemory.INSTANCE.deleteCustomer(id);
                 }
             return bool;
@@ -232,6 +228,18 @@ public class Helper{
         AccountDetails accInfo=accountDetails.get(transDetails.getAccountNumber());
         BigDecimal balance=accInfo.getBalance();
         return  balance;
+    }
+
+    public HashMap activateAccounts(){
+        HashMap<Integer, HashMap<Long, String>> outerMap= persistence.dataRetrievalAllCustomer();
+       return outerMap;
+
+    }
+    public HashMap retrieveAllAccounts(int id,long accNum){
+        HashMap<Integer, HashMap<Long, String>> outerMap= persistence.dataRetrievalAllCustomer();
+        HashMap<Long,String> innerMap=  outerMap.get(id);
+        return map;
+
     }
 
        public boolean closeConnection() {

@@ -3,6 +3,8 @@ package bankDatabase;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DatabaseManagement implements Persistence {
 	private static Connection conn = null;
@@ -39,7 +41,22 @@ public class DatabaseManagement implements Persistence {
 		}
 		return customerList;
 	}
-
+           //To retrieve all details both active and inactive
+	public HashMap<Integer, HashMap<Long, String>> dataRetrievalAllCustomer() {
+		HashMap<Integer,HashMap<Long,String>> allDetailsMap=new HashMap<>();
+		try (Statement stmt = conn.createStatement()){
+			resultSet = stmt.executeQuery("select * from account_details");
+			while (resultSet.next()) {
+				int cusId = resultSet.getInt("customer_id");
+				HashMap<Long, String> accountDetails = allDetailsMap.getOrDefault(cusId, new HashMap<>());
+				accountDetails.put(resultSet.getLong("account_number"), resultSet.getString("status"));
+				allDetailsMap.put(cusId, accountDetails);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return allDetailsMap;
+	}
 
 	@Override
 	public  ArrayList<AccountDetails> dataRetrievalOfAccount(){
@@ -137,7 +154,7 @@ public class DatabaseManagement implements Persistence {
 				finalList.add(accNum);
 		}
 		catch(BatchUpdateException e){
-			System.out.println(e);
+			System.out.println(e.getMessage());
 			try {
 				int[] array=e.getUpdateCounts();
 				for (Integer i:array) {
@@ -169,7 +186,7 @@ public class DatabaseManagement implements Persistence {
 			prepStmt.setInt(1,id);
 			condition= prepStmt.executeUpdate();
 		}catch(Exception e) {
-			System.out.println(e);
+			System.out.println(e.getMessage());
 		}finally {
 			if (prepStmt !=null)
 				try {
@@ -184,7 +201,7 @@ public class DatabaseManagement implements Persistence {
 
 	//To set the all accounts to deactive mode
 	@Override
-	public int updateAllAccounts(int id){
+	public int deactivateAllAccounts(int id){
 		int condition=0;
 		try{
 			conn.setAutoCommit(false);
@@ -199,7 +216,7 @@ public class DatabaseManagement implements Persistence {
 			} catch (SQLException exception) {
 				exception.printStackTrace();
 			}
-			System.out.println(e);
+			System.out.println(e.getMessage());
 		}finally {
 			if (prepStmt !=null)
 				try {
@@ -213,7 +230,7 @@ public class DatabaseManagement implements Persistence {
 	}
 	//To deactivate customer in customer table
 	@Override
-	public int updateCustomer(int id){
+	public int deactivateCustomer(int id){
 		int condition=0;
 		try{
 			conn.setAutoCommit(false);
@@ -223,7 +240,7 @@ public class DatabaseManagement implements Persistence {
 				condition = prepStmt1.executeUpdate();
 			conn.commit();
 		}catch(Exception e) {
-			System.out.println(e);
+			System.out.println(e.getMessage());
 			try{
 				conn.rollback();
 			} catch (SQLException exception) {
@@ -242,7 +259,7 @@ public class DatabaseManagement implements Persistence {
 	}
 	//To set the account number to deactive mode
 	@Override
-	public int deleteAccount(long accNumber){
+	public int deactivateAccount(long accNumber){
 		int condition=0;
 		try{
 			conn.setAutoCommit(false);
@@ -252,7 +269,7 @@ public class DatabaseManagement implements Persistence {
 			condition= prepStmt.executeUpdate();
 			conn.commit();
 		}catch(Exception e) {
-			System.out.println(e);
+			System.out.println(e.getMessage());
 			try{
 				conn.rollback();
 			} catch (SQLException exception) {
@@ -284,7 +301,7 @@ public class DatabaseManagement implements Persistence {
 			prepStmt.executeUpdate();
 			conn.commit();
 		}catch(Exception e) {
-			System.out.println(e);
+			System.out.println(e.getMessage());
 			try {
 				conn.rollback();
 				return false;
@@ -316,7 +333,7 @@ public class DatabaseManagement implements Persistence {
 			prepStmt.executeUpdate();
 			conn.commit();
 		}catch(Exception e) {
-			System.out.println(e);
+			System.out.println(e.getMessage());
 			try {
 				conn.rollback();
 				return false;
