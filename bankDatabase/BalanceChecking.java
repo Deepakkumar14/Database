@@ -29,10 +29,11 @@ public class BalanceChecking {
 			if (choice == 1) {
 				System.out.println("Enter customerId");
 				int customerId = input.nextInt();
+				int value=0;
+				if (helper.retrieveBooleanValue(customerId)) {
 				System.out.println("Enter 1 to check all account balance  \nEnter 2 to check particular account balance\n");
-				int value = input.nextInt();
+				value = input.nextInt();
 				if (value == 1) {
-					if (helper.retrieveBooleanValue(customerId)) {
 						String details = helper.retrieveCustomerDetails(customerId);
 						HashMap<Long, AccountDetails> accountMap = helper.retrieveAllAccountBalance(customerId);
 						System.out.print(details);
@@ -40,7 +41,8 @@ public class BalanceChecking {
 							System.out.print(values);
 						}
 					} else {
-						System.out.println("Invalid Customer id !!!!! Enter correct customer id.");
+					System.out.println("Enter 1,2 or 3");
+
 					}
 					System.out.println();
 
@@ -57,15 +59,16 @@ public class BalanceChecking {
 					}
 					System.out.println();
 				} else {
-					System.out.println("Enter 1,2 or 3");
+					System.out.println("Invalid Customer id !!!!! Enter correct customer id.");
 				}
 				System.out.println();
 			}
 			//-----------------------------------------------------------------------------------------
 			else if (choice == 2) {
 				System.out.println("Enter the customer_id to store in accounts table");
-				accountDetails.setCustomerId(input.nextInt());
-				//if (helper.retrieveBooleanValue(customerId)) {
+				int customerId=input.nextInt();
+				if (helper.retrieveBooleanValue(customerId)) {
+					accountDetails.setCustomerId(customerId);
 					System.out.println("Enter account balance");
 					accountDetails.setBalance(input.nextBigDecimal());
 					input.nextLine();
@@ -73,7 +76,10 @@ public class BalanceChecking {
 					accountDetails.setBranch(input.nextLine());
 					String output = helper.insertNewAccountDetails(accountDetails);
 					System.out.println(output);
-			//	}
+				}
+				else{
+					System.out.println("Invalid Customer id !!!!! Enter correct customer id.");
+				}
 				System.out.println();
 
 			}
