@@ -17,6 +17,8 @@ public interface Persistence {
     int deleteCustomer(int id);
 
     //To set the customer id to deactive mode
+    int updateAllAccounts(int id);
+
     int updateCustomer(int id);
 
     //To set the account number to deactive mode

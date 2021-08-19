@@ -6,8 +6,9 @@ public class BalanceChecking {
 	private static final Scanner input=new Scanner(System.in);
 	private static final Helper helper=new Helper();
 
-	public static void main(String[] args) throws Exception{
+	public static void main(String[] args){
 		BalanceChecking balanceChecking= new BalanceChecking();
+		helper.objectCreation();
 		balanceChecking.userChoice();
 	}
 
@@ -64,13 +65,15 @@ public class BalanceChecking {
 			else if (choice == 2) {
 				System.out.println("Enter the customer_id to store in accounts table");
 				accountDetails.setCustomerId(input.nextInt());
-				System.out.println("Enter account balance");
-				accountDetails.setBalance(input.nextBigDecimal());
-				input.nextLine();
-				System.out.println("Enter the branch name");
-				accountDetails.setBranch(input.nextLine());
-				String output=helper.insertNewAccountDetails(accountDetails);
-				System.out.println(output);
+				//if (helper.retrieveBooleanValue(customerId)) {
+					System.out.println("Enter account balance");
+					accountDetails.setBalance(input.nextBigDecimal());
+					input.nextLine();
+					System.out.println("Enter the branch name");
+					accountDetails.setBranch(input.nextLine());
+					String output = helper.insertNewAccountDetails(accountDetails);
+					System.out.println(output);
+			//	}
 				System.out.println();
 
 			}
@@ -123,7 +126,7 @@ public class BalanceChecking {
 							System.out.println("Enter account number");
 							long accNum = input.nextLong();
 							if (helper.retrieveAccountBooleanValue(customerId, accNum)) {
-								if (helper.deleteAccount(customerId, accNum)) {
+								if (helper.updateAccount(customerId, accNum)) {
 									System.out.println("########## Account Deleted ##########");
 								} else {
 									System.out.println("Server busy!!!!Try again later");
@@ -134,7 +137,7 @@ public class BalanceChecking {
 							break;
 						}
 						case 2: {
-							if (helper.deleteCustomer(customerId)) {
+							if (helper.updateAllAccounts(customerId)) {
 								System.out.println("######### customer Deleted #########");
 							} else {
 								System.out.println("Server busy!!!!Try again later");
@@ -157,7 +160,7 @@ public class BalanceChecking {
 				transDetails.setCustomerId(input.nextInt());
 				int id= transDetails.getCustomerId();
 				if(helper.retrieveBooleanValue(id)) {
-					System.out.println("Enter the account number from which you have to withdraw");
+					System.out.println("Enter the account number from which you have to withdraw or deposit");
 					transDetails.setAccountNumber(input.nextLong());
 					long accNum=transDetails.getAccountNumber();
 					if (helper.retrieveAccountBooleanValue(id,accNum)) {

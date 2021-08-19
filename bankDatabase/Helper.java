@@ -1,10 +1,11 @@
 package bankDatabase;
 
-
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+
 import java.io.IOException;
 import java.math.BigDecimal;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
@@ -12,17 +13,23 @@ import java.util.Properties;
 public class Helper{
 
     private Persistence persistence;
-    public Helper(){
+    public void objectCreation() {
         try {
             FileReader file=new FileReader("Properties.properties");
-            Properties properties=new Properties();
-            properties.load(file);
-            String value=properties.getProperty("PersistenceObject");
-            persistence= (Persistence) Class.forName(value).newInstance();
-            callingDatabaseForCustomer();
-            callingDatabaseForAccount();
-        } catch (IOException|ClassNotFoundException|InstantiationException|IllegalAccessException e) {
-            e.printStackTrace();
+            if(file!=null) {
+                Properties properties = new Properties();
+                properties.load(file);
+                String value = properties.getProperty("PersistenceObject");
+                persistence = (Persistence) Class.forName(value).newInstance();
+                callingDatabaseForCustomer();
+                callingDatabaseForAccount();
+            }
+        } catch (IOException|ClassNotFoundException|InstantiationException|IllegalAccessException  e) {
+            System.out.println("Database object not created!!!Check the properties file location");
+            System.exit(0);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            System.exit(0);
         }
     }
 
@@ -33,11 +40,11 @@ public class Helper{
         }
     }
 
-    public void callingDatabaseForCustomer(){
-        ArrayList<CustomerDetails> customerList = persistence.dataRetrievalOfCustomer();
-        for(int i=0;i<customerList.size();i++){
-            CacheMemory.INSTANCE.setCustomerDetails(customerList.get(i));
-        }
+    public void callingDatabaseForCustomer() {
+            ArrayList<CustomerDetails> customerList = persistence.dataRetrievalOfCustomer();
+            for (int i = 0; i < customerList.size(); i++) {
+                CacheMemory.INSTANCE.setCustomerDetails(customerList.get(i));
+            }
     }
     public boolean retrieveBooleanValue(int id){
         if(id!=0) {
@@ -65,7 +72,6 @@ public class Helper{
     public String retrieveCustomerDetails(int id) {
 
         CustomerDetails customerValues=CacheMemory.INSTANCE.customerDetails(id);
-
         if (customerValues!=null) {
            return customerValues.toString();
 
@@ -155,8 +161,9 @@ public class Helper{
         }
     }
 
-    public boolean deleteCustomer(int id){
-        int condition= persistence.updateCustomer(id);
+    public boolean updateAllAccounts(int id){
+        int condition= persistence.updateAllAccounts(id);
+        persistence.updateCustomer(id);
         if(condition>0) {
             boolean bool = CacheMemory.INSTANCE.deleteCustomer(id);
             return bool;
@@ -166,12 +173,17 @@ public class Helper{
         }
     }
 
-    public boolean deleteAccount(int id,long accNum){
+    public boolean updateAccount(int id, long accNum){
         int condition = persistence.deleteAccount(accNum);
         if(condition>=0) {
             boolean bool=CacheMemory.INSTANCE.deleteAccount(id,accNum);
+                HashMap<Long,AccountDetails> accountDetails=CacheMemory.INSTANCE.accountDetails(id);
+                if(accountDetails.size()==0){
+                  persistence.updateCustomer(id);
+                  CacheMemory.INSTANCE.deleteCustomer(id);
+                }
             return bool;
-        }
+            }
         else{
             return false;
         }

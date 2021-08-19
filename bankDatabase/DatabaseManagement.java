@@ -11,13 +11,13 @@ public class DatabaseManagement implements Persistence {
 	private static ResultSet resultSet =null;
 	private static String query="";
 
-	public  DatabaseManagement(){
-		try{
+	public  DatabaseManagement() throws Exception {
+		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/ZohoBank","root","1234");
-		}
-		catch(Exception e) {
-			e.printStackTrace();
+			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/ZohoBank", "root", "1234");
+
+		} catch (ClassNotFoundException|SQLException e) {
+			throw new CustomException("Not connected to the Database!!!Connection error");
 		}
 	}
 
@@ -119,6 +119,7 @@ public class DatabaseManagement implements Persistence {
 		ResultSet res;
 		ArrayList finalList = new ArrayList();
 		try{
+			conn.setAutoCommit(false);
 			query= "insert into account_details(customer_id,balance,branch) values (?,?,?)";
 			prepStmt = conn.prepareStatement(query,Statement.RETURN_GENERATED_KEYS);
 				prepStmt.setInt(1, accInfo.getCustomerId());
@@ -181,19 +182,16 @@ public class DatabaseManagement implements Persistence {
 		return condition;
 	}
 
-	//To set the customer id to deactive mode
+	//To set the all accounts to deactive mode
 	@Override
-	public int updateCustomer(int id){
+	public int updateAllAccounts(int id){
 		int condition=0;
 		try{
 			conn.setAutoCommit(false);
 			query="update account_details set status ='Deactive' where customer_id = ?";
-			for(int i=0;i<2;i++) {
 				prepStmt = conn.prepareStatement(query);
 				prepStmt.setInt(1, id);
 				condition = prepStmt.executeUpdate();
-				query = "update customer_details set status ='Deactive' where customer_id= ?";
-			}
 			conn.commit();
 		}catch(Exception e) {
 			try{
@@ -206,6 +204,35 @@ public class DatabaseManagement implements Persistence {
 			if (prepStmt !=null)
 				try {
 					prepStmt.close();
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+		}
+		return condition;
+	}
+	//To deactivate customer in customer table
+	@Override
+	public int updateCustomer(int id){
+		int condition=0;
+		try{
+			conn.setAutoCommit(false);
+			String query1="update customer_details set status ='Deactive' where customer_id= ?";
+				prepStmt1 = conn.prepareStatement(query1);
+				prepStmt1.setInt(1, id);
+				condition = prepStmt1.executeUpdate();
+			conn.commit();
+		}catch(Exception e) {
+			System.out.println(e);
+			try{
+				conn.rollback();
+			} catch (SQLException exception) {
+				exception.printStackTrace();
+			}
+		}finally {
+			if (prepStmt1 !=null)
+				try {
+					prepStmt1.close();
 				}
 				catch (Exception e) {
 					e.printStackTrace();
