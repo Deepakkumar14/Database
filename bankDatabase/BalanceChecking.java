@@ -47,6 +47,7 @@ public class BalanceChecking {
 							}
 						}
 						System.out.println();
+						break;
 						case 2: {
 							System.out.println("Enter the account number");
 							long accNumber = input.nextInt();
@@ -59,6 +60,7 @@ public class BalanceChecking {
 								System.out.println("Invalid account number !!!!! Enter correct account number.");
 							System.out.println();
 						}
+						break;
 						default:
 							System.out.println("Invalid option!!!Enter 1 or 2");
 					}
@@ -134,20 +136,17 @@ public class BalanceChecking {
 							System.out.println("Enter account number");
 							long accNum = input.nextLong();
 							if (helper.retrieveAccountBooleanValue(customerId, accNum)) {
-								if (helper.updateAccount(customerId, accNum)) {
-									System.out.println("########## Account Deleted ##########");
-								} else
-									System.out.println("Server busy!!!!Try again later");
+								String output=helper.updateAccount(customerId, accNum);
+								System.out.println(output);
+								System.out.println();
 							}else
 								System.out.println("Invalid account number");
 							break;
 						}
 						case 2: {
-							if (helper.updateAllAccounts(customerId)) {
-								System.out.println("######### customer Deleted #########");
-							} else {
-								System.out.println("Server busy!!!!Try again later");
-							}
+							String output1=helper.updateAllAccounts(customerId);
+							System.out.println(output1);
+							System.out.println();
 							break;
 						}
 						default:
@@ -178,12 +177,9 @@ public class BalanceChecking {
 								input.nextLine();
 								System.out.println("Enter the type of transaction account \nSavings account\nCurrent account: ");
 								transDetails.setTransactionType(input.nextLine());
-								boolean bool = helper.deposit(transDetails);
-								if (bool) {
-									System.out.println("************ Deposit of " + transDetails.getTransactionAmount() + " is successful ***************");
-								} else {
-									System.out.println("Server Error !!Try again");
-								}
+								String output = helper.deposit(transDetails);
+								System.out.println(output);
+								System.out.println();
 								break;
 							}
 							case 2: {
@@ -192,12 +188,9 @@ public class BalanceChecking {
 								input.nextLine();
 								System.out.println("Enter the type of transaction account \nSavings account\nCurrent account: ");
 								transDetails.setTransactionType(input.nextLine());
-								boolean bool = helper.withdrawal(transDetails);
-								if (bool) {
-									System.out.println("************** Withdrawal of " + transDetails.getTransactionAmount() + " is successful **************");
-								} else {
-									System.out.println("Insufficient balance");
-								}
+								String output1 = helper.withdrawal(transDetails);
+								System.out.println(output1);
+								System.out.println();
 								break;
 							} default:
 								System.out.println("Invalid option!!!!\nEnter 1 or 2");
@@ -263,11 +256,9 @@ public class BalanceChecking {
 //			}
 			//----------------------------------------------------------------------------------------------
 			else if (choice == 8) {
-				boolean bool=helper.closeConnection();
-				if(bool)
-					System.out.println("Connection is closed ");
-				else
-					System.out.println("Connection is Not closed");
+				String output=helper.closeConnection();
+				System.out.println(output);
+				System.out.println();
 				break;
 			}
 			//----------------------------------------------------------------------------------------------

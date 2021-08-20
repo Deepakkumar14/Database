@@ -157,35 +157,36 @@ public class Helper{
         }
     }
     //---------------------------------------------------------------------------------------------
-    public boolean updateAllAccounts(int id){
+    public String updateAllAccounts(int id){
         int condition= persistence.deactivateAllAccounts(id);
         persistence.deactivateCustomer(id);
         if(condition>0) {
             boolean bool = CacheMemory.INSTANCE.deleteCustomer(id);
-            return bool;
+            return "########## Customer "+id+" Deleted successfully##########";
         }
        else{
-           return false;
+           return "Server busy!!!!Try again later later";
         }
     }
     //---------------------------------------------------------------------------------------------
-    public boolean updateAccount(int id, long accNum){
+    public String updateAccount(int id, long accNum){
         int condition = persistence.deactivateAccount(accNum);
         if(condition>0) {
-            boolean bool=CacheMemory.INSTANCE.deleteAccount(id,accNum);
+                CacheMemory.INSTANCE.deleteAccount(id,accNum);
                 HashMap<Long,AccountDetails> accountDetails=CacheMemory.INSTANCE.accountDetails(id);
                 if(accountDetails.size()==0){
                   persistence.deactivateCustomer(id);
                   CacheMemory.INSTANCE.deleteCustomer(id);
+                  return "########## Customer "+id+" Deleted successfully##########\n########## Account "+accNum+" Deleted successfully##########";
                 }
-            return bool;
+                return "########## Account "+accNum+" Deleted successfully##########";
             }
         else{
-            return false;
+            return "Server busy!!!!Try again later later";
         }
     }
     //---------------------------------------------------------------------------------------------
-    public boolean withdrawal(TransactionDetails transDetails){
+    public String withdrawal(TransactionDetails transDetails){
         BigDecimal balance=getBalance(transDetails);
         BigDecimal withdrawalAmount=transDetails.getTransactionAmount();
         int comparedValue=balance.compareTo(withdrawalAmount);
@@ -196,18 +197,18 @@ public class Helper{
            if(bool){
                boolean bool1= persistence.updateBalance(transDetails,total);
                CacheMemory.INSTANCE.updateBalance(transDetails,total);
-               return  bool1;
+               return  "************** Withdrawal of " + withdrawalAmount + " is successful **************";
            }
             else{
-                return false;
+                return "Server Error !!Try again later";
            }
         }
         else{
-            return false;
+            return "Insufficient balance";
         }
     }
     //---------------------------------------------------------------------------------------------
-    public boolean deposit(TransactionDetails transDetails) {
+    public String deposit(TransactionDetails transDetails) {
         BigDecimal balance=getBalance(transDetails);
         BigDecimal depositAmount=transDetails.getTransactionAmount();
         BigDecimal total=balance.add(depositAmount);
@@ -216,10 +217,10 @@ public class Helper{
             if(bool){
                 boolean bool1= persistence.updateBalance(transDetails,total);
                 CacheMemory.INSTANCE.updateBalance(transDetails,total);
-                return  bool1;
+                return  "************ Deposit of " + depositAmount + " is successful ***************";
             }
             else{
-                return false;
+                return "Server Error !!Try again later";
             }
         }
     //---------------------------------------------------------------------------------------------
@@ -252,12 +253,16 @@ public class Helper{
         return "Account is not activated!!Server busy!!!Try again later";
     }
     //---------------------------------------------------------------------------------------------
-    public void transferAmount(){
-
-    }
+//    public void transferAmount(){
+//
+//    }
     //---------------------------------------------------------------------------------------------
-       public boolean closeConnection() {
-           return persistence.closeConnection();
+       public String closeConnection() {
+           if(persistence.closeConnection())
+               return "Connection is closed ";
+           else
+               return  "Connection is Not closed";
+
        }
 
 
