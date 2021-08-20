@@ -7,6 +7,7 @@ public enum CacheMemory {
     INSTANCE;
     private  HashMap<Integer,CustomerDetails> customerMap =new HashMap<>();
     private  HashMap<Integer,HashMap<Long,AccountDetails>> accountMap =new HashMap<>();
+    private  HashMap<Integer,HashMap<Long,String>> allAccountsMap =new HashMap<>();
 
 
     public HashMap<Integer,HashMap<Long,AccountDetails>> accountBoolean() {
@@ -26,6 +27,15 @@ public enum CacheMemory {
             int cusId = customerDetails.getCustomerId();
             customerMap.put(cusId, customerDetails);
         }
+    }
+
+    public HashMap<Integer, HashMap<Long, String>> setAllAccountsMap(HashMap<Integer,HashMap<Long,String>> allAccounts){
+        allAccountsMap.putAll(allAccounts);
+        return allAccountsMap;
+    }
+
+    public HashMap<Integer, HashMap<Long, String>> getAllAccountsMap(){
+        return allAccountsMap;
     }
 
     public boolean deleteCustomer(int id){

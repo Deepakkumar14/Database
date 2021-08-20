@@ -28,6 +28,9 @@ public interface Persistence {
     //To set the account number to deactive mode
     int deactivateAccount(long accNumber);
 
+    //To activate account and customer
+    int activateAccount(int id,long accNum);
+
     boolean withdrawalAndDeposit(TransactionDetails transDetails, String type);
 
 //After withdrawal or deposit the account balance in the accounts table is updated

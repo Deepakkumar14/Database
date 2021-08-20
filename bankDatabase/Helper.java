@@ -15,12 +15,10 @@ public class Helper{
     public void objectCreation() {
         try {
             FileReader file=new FileReader("Properties.properties");
-            if(file!=null) {
                 Properties properties = new Properties();
                 properties.load(file);
                 String value = properties.getProperty("PersistenceObject");
                 persistence = (Persistence) Class.forName(value).newInstance();
-            }
         } catch (IOException|ClassNotFoundException|InstantiationException|IllegalAccessException  e) {
             System.out.println("Database object not created!!!Check the properties file location");
             System.exit(0);
@@ -29,20 +27,26 @@ public class Helper{
             System.exit(0);
         }
     }
-
+    //---------------------------------------------------------------------------------------------
     public void callingDatabaseForAccount() {
         ArrayList<AccountDetails> accountList= persistence.dataRetrievalOfAccount();
         for(int i=0;i<accountList.size();i++){
             CacheMemory.INSTANCE.setAccountMap(accountList.get(i));
         }
     }
-
+    //---------------------------------------------------------------------------------------------
     public void callingDatabaseForCustomer() {
             ArrayList<CustomerDetails> customerList = persistence.dataRetrievalOfCustomer();
             for (int i = 0; i < customerList.size(); i++) {
                 CacheMemory.INSTANCE.setCustomerDetails(customerList.get(i));
             }
     }
+    //---------------------------------------------------------------------------------------------
+    public void setAllCustomerMap(){
+        HashMap<Integer, HashMap<Long, String>> outerMap= persistence.dataRetrievalAllCustomer();
+        CacheMemory.INSTANCE.setAllAccountsMap(outerMap);
+    }
+    //---------------------------------------------------------------------------------------------
     public boolean retrieveBooleanValue(int id){
         if(id!=0) {
             return CacheMemory.INSTANCE.accountBoolean().containsKey(id);
@@ -51,7 +55,7 @@ public class Helper{
             return false;
         }
     }
-
+    //---------------------------------------------------------------------------------------------
     public boolean retrieveAccountBooleanValue(int id,long accountNum){
         if(id!=0&&accountNum!=0) {
             HashMap<Integer, HashMap<Long, AccountDetails>> accountMap = CacheMemory.INSTANCE.accountBoolean();
@@ -64,26 +68,21 @@ public class Helper{
         }
            return false;
     }
-
+    //---------------------------------------------------------------------------------------------
     public String retrieveCustomerDetails(int id) {
-
         CustomerDetails customerValues=CacheMemory.INSTANCE.customerDetails(id);
         if (customerValues!=null) {
            return customerValues.toString();
-
-        } else {
+        } else
            return "Enter correct customer id";
-        }
     }
-
-
+    //---------------------------------------------------------------------------------------------
     public HashMap<Long, AccountDetails> retrieveAllAccountBalance(int id) {
         HashMap<Long, AccountDetails> accountMap=CacheMemory.INSTANCE.accountDetails(id);
         return accountMap;
 
     }
-
-
+    //---------------------------------------------------------------------------------------------
     public String retrieveParticularAccountBalance(long accNum, int id)  {
         HashMap<Long, AccountDetails> accountMap=CacheMemory.INSTANCE.accountDetails(id);
             if (accountMap.get(accNum)!=null) {
@@ -94,6 +93,7 @@ public class Helper{
                 return "Invalid account number";
             }
         }
+    //---------------------------------------------------------------------------------------------
     public HashMap<String, String> checkPoint(ArrayList<ArrayList> details){
         ArrayList<Integer> successRate= persistence.insertCustomerInfoToTable(details);
         int size=details.size();
@@ -120,7 +120,7 @@ public class Helper{
        }
         return successAndFailure;
     }
-
+    //---------------------------------------------------------------------------------------------
     public HashMap insertNewCustomerDetails(ArrayList<ArrayList> details, ArrayList<Integer> successRate, int size, HashMap successAndFailure) {
         for(int i=0;i< details.size();i++) {
             CustomerDetails cusInfo = (CustomerDetails) details.get(i).get(0);
@@ -144,7 +144,7 @@ public class Helper{
         }
         return successAndFailure;
     }
-
+    //---------------------------------------------------------------------------------------------
     public String insertNewAccountDetails(AccountDetails accDetails) {
         ArrayList<Object> successRate= persistence.insertAccountInfoToTable(accDetails);
         if((Integer)successRate.get(0)>0) {
@@ -156,7 +156,7 @@ public class Helper{
             return "Account is not added" +"\t"+ accDetails;
         }
     }
-
+    //---------------------------------------------------------------------------------------------
     public boolean updateAllAccounts(int id){
         int condition= persistence.deactivateAllAccounts(id);
         persistence.deactivateCustomer(id);
@@ -168,7 +168,7 @@ public class Helper{
            return false;
         }
     }
-
+    //---------------------------------------------------------------------------------------------
     public boolean updateAccount(int id, long accNum){
         int condition = persistence.deactivateAccount(accNum);
         if(condition>0) {
@@ -184,7 +184,7 @@ public class Helper{
             return false;
         }
     }
-
+    //---------------------------------------------------------------------------------------------
     public boolean withdrawal(TransactionDetails transDetails){
         BigDecimal balance=getBalance(transDetails);
         BigDecimal withdrawalAmount=transDetails.getTransactionAmount();
@@ -206,6 +206,7 @@ public class Helper{
             return false;
         }
     }
+    //---------------------------------------------------------------------------------------------
     public boolean deposit(TransactionDetails transDetails) {
         BigDecimal balance=getBalance(transDetails);
         BigDecimal depositAmount=transDetails.getTransactionAmount();
@@ -221,7 +222,7 @@ public class Helper{
                 return false;
             }
         }
-
+    //---------------------------------------------------------------------------------------------
     public BigDecimal getBalance(TransactionDetails transDetails){
         HashMap<Integer,HashMap<Long,AccountDetails>> accountMap=CacheMemory.INSTANCE.accountBoolean();
         HashMap<Long,AccountDetails>accountDetails=accountMap.get(transDetails.getCustomerId());
@@ -229,19 +230,32 @@ public class Helper{
         BigDecimal balance=accInfo.getBalance();
         return  balance;
     }
-
-    public HashMap activateAccounts(){
-        HashMap<Integer, HashMap<Long, String>> outerMap= persistence.dataRetrievalAllCustomer();
+    //---------------------------------------------------------------------------------------------
+    public HashMap allCustomers(){
+        HashMap<Integer, HashMap<Long, String>> outerMap= CacheMemory.INSTANCE.getAllAccountsMap();
        return outerMap;
-
     }
-    public HashMap retrieveAllAccounts(int id,long accNum){
-        HashMap<Integer, HashMap<Long, String>> outerMap= persistence.dataRetrievalAllCustomer();
+    //---------------------------------------------------------------------------------------------
+    public HashMap allAccounts(int id){
+        HashMap<Integer, HashMap<Long, String>> outerMap= CacheMemory.INSTANCE.getAllAccountsMap();
         HashMap<Long,String> innerMap=  outerMap.get(id);
-        return map;
+        return innerMap;
+    }
+    //---------------------------------------------------------------------------------------------
+    public String activateAccounts(int id,long accNum){
+        int condition= persistence.activateAccount(id,accNum);
+        if(condition>0){
+            callingDatabaseForCustomer();
+            callingDatabaseForAccount();
+            return "*******Account is activated*********";
+        }
+        return "Account is not activated!!Server busy!!!Try again later";
+    }
+    //---------------------------------------------------------------------------------------------
+    public void transferAmount(){
 
     }
-
+    //---------------------------------------------------------------------------------------------
        public boolean closeConnection() {
            return persistence.closeConnection();
        }

@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 public class DatabaseManagement implements Persistence {
 	private static Connection conn = null;
@@ -198,7 +197,39 @@ public class DatabaseManagement implements Persistence {
 		}
 		return condition;
 	}
-
+	//To activate account and customer
+	@Override
+	public int activateAccount(int id,long accNum){
+		int condition=0;
+		try{
+			conn.setAutoCommit(false);
+			query="update account_details set status ='Active' where account_number= ?";
+			prepStmt = conn.prepareStatement(query);
+			prepStmt.setLong(1, accNum);
+			prepStmt.executeUpdate();
+			String query1="update customer_details set status ='Active' where customer_id= ?";
+			prepStmt1 = conn.prepareStatement(query1);
+			prepStmt1.setInt(1, id);
+			condition = prepStmt1.executeUpdate();
+			conn.commit();
+		}catch(Exception e) {
+			try{
+				conn.rollback();
+			} catch (SQLException exception) {
+				exception.printStackTrace();
+			}
+			System.out.println(e.getMessage());
+		}finally {
+			if (prepStmt !=null)
+				try {
+					prepStmt.close();
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+		}
+		return condition;
+	}
 	//To set the all accounts to deactive mode
 	@Override
 	public int deactivateAllAccounts(int id){
