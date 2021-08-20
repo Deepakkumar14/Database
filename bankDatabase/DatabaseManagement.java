@@ -23,7 +23,7 @@ public class DatabaseManagement implements Persistence {
 	}
 
 	@Override
-	public  ArrayList<CustomerDetails> dataRetrievalOfCustomer() {
+	public  ArrayList<CustomerDetails> dataRetrievalOfCustomer() throws CustomException{
 		ArrayList<CustomerDetails> customerList = new ArrayList<>();
 		try (Statement stmt = conn.createStatement()){
 			resultSet = stmt.executeQuery("select * from  customer_details where status='Active'");
@@ -36,12 +36,12 @@ public class DatabaseManagement implements Persistence {
 				customerList.add(customerInfoToMap);
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			throw new CustomException("Error in getting Customer details from the database");
 		}
 		return customerList;
 	}
            //To retrieve all details both active and inactive
-	public HashMap<Integer, HashMap<Long, String>> dataRetrievalAllCustomer() {
+	public HashMap<Integer, HashMap<Long, String>> dataRetrievalAllCustomer() throws CustomException{
 		HashMap<Integer,HashMap<Long,String>> allDetailsMap=new HashMap<>();
 		try (Statement stmt = conn.createStatement()){
 			resultSet = stmt.executeQuery("select * from account_details");
@@ -52,13 +52,13 @@ public class DatabaseManagement implements Persistence {
 				allDetailsMap.put(cusId, accountDetails);
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			throw new CustomException("Error in getting All Account details from the database");
 		}
 		return allDetailsMap;
 	}
 
 	@Override
-	public  ArrayList<AccountDetails> dataRetrievalOfAccount(){
+	public  ArrayList<AccountDetails> dataRetrievalOfAccount() throws CustomException {
 		ArrayList<AccountDetails> accountList=new ArrayList<>();
 		try (Statement stmt = conn.createStatement()) {
 			resultSet= stmt.executeQuery("select * from account_details where status='Active'");
@@ -72,15 +72,14 @@ public class DatabaseManagement implements Persistence {
 				accountInfoToMap.setBranch(resultSet.getString("branch"));
 				accountList.add(accountInfoToMap);
 			}
-		}
-		catch(Exception e){
-			e.printStackTrace();
+		} catch(Exception e){
+			throw new CustomException("Error in getting Account details from the database");
 		}
 		return accountList;
 	}
 
 	@Override
-	public ArrayList insertCustomerInfoToTable(ArrayList<ArrayList> details)  {
+	public ArrayList insertCustomerInfoToTable(ArrayList<ArrayList> details) throws CustomException {
 		ResultSet res;
 		int[] successRate;
 		ArrayList finalList = new ArrayList();
@@ -113,24 +112,24 @@ public class DatabaseManagement implements Persistence {
 					finalList.add(res.getInt(1));
 				}
 			} catch (Exception exception) {
-				exception.printStackTrace();
+				throw new CustomException("Cannot insert customer details to the table !!!please check the input details");
 			}
 		} catch (Exception exception) {
-			exception.printStackTrace();
+			throw new CustomException("Cannot insert customer details to the table !!!please check the input details");
 		} finally {
 			if (prepStmt1 !=null)
 				try {
 					prepStmt1.close();
 				}
 				catch (Exception e) {
-					e.printStackTrace();
+					throw new CustomException("Prepared statement not closed");
 				}
 		}
 		return finalList;
 	}
 
 	@Override
-	public ArrayList insertAccountInfoToTable(AccountDetails accInfo) {
+	public ArrayList insertAccountInfoToTable(AccountDetails accInfo) throws CustomException {
 		long accNum=0;
 		ResultSet res;
 		ArrayList finalList = new ArrayList();
@@ -153,53 +152,51 @@ public class DatabaseManagement implements Persistence {
 				finalList.add(accNum);
 		}
 		catch(BatchUpdateException e){
-			System.out.println(e.getMessage());
 			try {
 				int[] array=e.getUpdateCounts();
 				for (Integer i:array) {
 					finalList.add(i);
 				}
 			} catch (Exception exception) {
-				exception.printStackTrace();
+				throw new CustomException("Cannot insert account details to the table !!!please check the input details");
 			}
-		} catch (Exception exception) {
-			exception.printStackTrace();
-		}finally {
+		} catch (SQLException exception) {
+			throw new CustomException("Cannot insert account details to the table !!!please check the input details");
+		} finally {
 			if (prepStmt !=null)
 				try {
 					prepStmt.close();
 				}
 				catch (Exception e) {
-					e.printStackTrace();
+					throw new CustomException("Prepared statement not closed");
 				}
 		}
 		return finalList;
 	}
 	//To delete customer id that is entered during customer insertion but failed during account insertion
 	@Override
-	public int deleteCustomer(int id){
-		int condition=0;
+	public void deleteCustomer(int id) throws CustomException {
 		try{
 			query = "delete from customer_details where customer_id = ? ";
 			prepStmt = conn.prepareStatement(query);
 			prepStmt.setInt(1,id);
-			condition= prepStmt.executeUpdate();
+			prepStmt.executeUpdate();
 		}catch(Exception e) {
-			System.out.println(e.getMessage());
+			throw new CustomException("Cannot delete the customer !!Server error try again later");
 		}finally {
 			if (prepStmt !=null)
 				try {
 					prepStmt.close();
 				}
 				catch (Exception e) {
-					e.printStackTrace();
+					throw new CustomException("Prepared statement not closed");
 				}
 		}
-		return condition;
 	}
+
 	//To activate account and customer
 	@Override
-	public int activateAccount(int id,long accNum){
+	public int activateAccount(int id,long accNum) throws CustomException {
 		int condition=0;
 		try{
 			conn.setAutoCommit(false);
@@ -216,7 +213,7 @@ public class DatabaseManagement implements Persistence {
 			try{
 				conn.rollback();
 			} catch (SQLException exception) {
-				exception.printStackTrace();
+				throw new CustomException("Cannot activate account!!Please check the details");
 			}
 			System.out.println(e.getMessage());
 		}finally {
@@ -225,14 +222,14 @@ public class DatabaseManagement implements Persistence {
 					prepStmt.close();
 				}
 				catch (Exception e) {
-					e.printStackTrace();
+					throw new CustomException("Prepared statement not closed");
 				}
 		}
 		return condition;
 	}
 	//To set the all accounts to deactive mode
 	@Override
-	public int deactivateAllAccounts(int id){
+	public int deactivateAllAccounts(int id) throws CustomException {
 		int condition=0;
 		try{
 			conn.setAutoCommit(false);
@@ -245,23 +242,22 @@ public class DatabaseManagement implements Persistence {
 			try{
 				conn.rollback();
 			} catch (SQLException exception) {
-				exception.printStackTrace();
+				throw new CustomException("cannot deactivate the account !!Try again later");
 			}
-			System.out.println(e.getMessage());
 		}finally {
 			if (prepStmt !=null)
 				try {
 					prepStmt.close();
 				}
 				catch (Exception e) {
-					e.printStackTrace();
+					throw new CustomException("Prepared statement not closed");
 				}
 		}
 		return condition;
 	}
 	//To deactivate customer in customer table
 	@Override
-	public int deactivateCustomer(int id){
+	public int deactivateCustomer(int id) throws CustomException {
 		int condition=0;
 		try{
 			conn.setAutoCommit(false);
@@ -275,7 +271,7 @@ public class DatabaseManagement implements Persistence {
 			try{
 				conn.rollback();
 			} catch (SQLException exception) {
-				exception.printStackTrace();
+				throw new CustomException("Cannot deactivate customer!!!Try again later");
 			}
 		}finally {
 			if (prepStmt1 !=null)
@@ -283,14 +279,14 @@ public class DatabaseManagement implements Persistence {
 					prepStmt1.close();
 				}
 				catch (Exception e) {
-					e.printStackTrace();
+					throw new CustomException("Prepared statement not closed");
 				}
 		}
 		return condition;
 	}
 	//To set the account number to deactive mode
 	@Override
-	public int deactivateAccount(long accNumber){
+	public int deactivateAccount(long accNumber) throws CustomException {
 		int condition=0;
 		try{
 			conn.setAutoCommit(false);
@@ -304,7 +300,7 @@ public class DatabaseManagement implements Persistence {
 			try{
 				conn.rollback();
 			} catch (SQLException exception) {
-				exception.printStackTrace();
+				throw new CustomException("Cannot deactivate the account!!Try again later ");
 			}
 		}finally {
 			if (prepStmt !=null)
@@ -312,14 +308,14 @@ public class DatabaseManagement implements Persistence {
 					prepStmt.close();
 				}
 				catch (Exception e) {
-					e.printStackTrace();
+					throw new CustomException("Prepared statement not closed");
 				}
 		}
 		return condition;
 	}
 
 	@Override
-	public boolean withdrawalAndDeposit(TransactionDetails transDetails, String type){
+	public boolean withdrawalAndDeposit(TransactionDetails transDetails, String type) throws CustomException {
 		try{
 			conn.setAutoCommit(false);
 			query = "INSERT INTO transaction_details(customer_id,account_number,transaction_type,transaction_amount,date,status)values(?,?,?,?,null,?)";
@@ -332,12 +328,11 @@ public class DatabaseManagement implements Persistence {
 			prepStmt.executeUpdate();
 			conn.commit();
 		}catch(Exception e) {
-			System.out.println(e.getMessage());
 			try {
 				conn.rollback();
 				return false;
 			} catch (SQLException exception) {
-				exception.printStackTrace();
+				throw new CustomException("Cannot proceed the transaction !!Server busy !!Try again later");
 			}
 		}finally {
 			if (prepStmt !=null)
@@ -345,7 +340,7 @@ public class DatabaseManagement implements Persistence {
 					prepStmt.close();
 				}
 				catch (Exception e) {
-					e.printStackTrace();
+					throw new CustomException("Prepared statement not closed");
 				}
 		}
 		return true;
@@ -353,7 +348,7 @@ public class DatabaseManagement implements Persistence {
 
 	//After withdrawal or deposit the account balance in the accounts table is updated
 	@Override
-	public boolean updateBalance(TransactionDetails transDetails, BigDecimal total) {
+	public boolean updateBalance(TransactionDetails transDetails, BigDecimal total) throws CustomException {
 		try{
 			conn.setAutoCommit(false);
 			query = "update account_details set balance=? where customer_id =? AND account_number=?";
@@ -369,7 +364,7 @@ public class DatabaseManagement implements Persistence {
 				conn.rollback();
 				return false;
 			} catch (SQLException exception) {
-				exception.printStackTrace();
+				throw new CustomException("Cannot update balance in accounts database!!Try again later");
 			}
 		}finally {
 			if (prepStmt !=null)
@@ -377,21 +372,20 @@ public class DatabaseManagement implements Persistence {
 					prepStmt.close();
 				}
 				catch (Exception e) {
-					e.printStackTrace();
+					throw new CustomException("Prepared statement not closed");
 				}
 		}
 		return true;
 	}
 
 @Override
-	public boolean closeConnection() {
+	public boolean closeConnection() throws CustomException {
 		try {
 			conn.close();
 			boolean bool = conn.isClosed();
 			return bool;
 		} catch (SQLException exception) {
-			System.out.println(exception);
-			return false;
+			throw new CustomException("Connection is not closed");
 		}
 	}
 

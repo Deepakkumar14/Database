@@ -28,45 +28,45 @@ public class Helper{
         }
     }
     //---------------------------------------------------------------------------------------------
-    public void callingDatabaseForAccount() {
+    public void callingDatabaseForAccount() throws CustomException {
         ArrayList<AccountDetails> accountList= persistence.dataRetrievalOfAccount();
         for(int i=0;i<accountList.size();i++){
             CacheMemory.INSTANCE.setAccountMap(accountList.get(i));
         }
     }
     //---------------------------------------------------------------------------------------------
-    public void callingDatabaseForCustomer() {
+    public void callingDatabaseForCustomer() throws  CustomException{
             ArrayList<CustomerDetails> customerList = persistence.dataRetrievalOfCustomer();
             for (int i = 0; i < customerList.size(); i++) {
                 CacheMemory.INSTANCE.setCustomerDetails(customerList.get(i));
             }
     }
     //---------------------------------------------------------------------------------------------
-    public void setAllCustomerMap(){
+    public void setAllCustomerMap() throws CustomException {
         HashMap<Integer, HashMap<Long, String>> outerMap= persistence.dataRetrievalAllCustomer();
         CacheMemory.INSTANCE.setAllAccountsMap(outerMap);
     }
     //---------------------------------------------------------------------------------------------
-    public boolean retrieveBooleanValue(int id){
-        if(id!=0) {
-            return CacheMemory.INSTANCE.accountBoolean().containsKey(id);
+    public String retrieveBooleanValue(int id){
+        if(CacheMemory.INSTANCE.accountBoolean().containsKey(id)) {
+            return "true";
         }
         else{
-            return false;
+            return "Invalid customer id!!!!!Enter correct customer id";
         }
     }
     //---------------------------------------------------------------------------------------------
-    public boolean retrieveAccountBooleanValue(int id,long accountNum){
-        if(id!=0&&accountNum!=0) {
+    public String retrieveAccountBooleanValue(int id, long accountNum){
             HashMap<Integer, HashMap<Long, AccountDetails>> accountMap = CacheMemory.INSTANCE.accountBoolean();
-            if (accountMap.containsKey(id)) {
                 HashMap<Long, AccountDetails> accountDetails = accountMap.get(id);
-                if (accountDetails.containsKey(accountNum)) {
-                    return true;
+                if(accountDetails==null){
+                    return"Deactivated account number";
                 }
-            }
-        }
-           return false;
+                if (accountDetails.containsKey(accountNum)) {
+                    return "true";
+                }
+                else
+                  return "Invalid account number !!!!! Enter correct account number.";
     }
     //---------------------------------------------------------------------------------------------
     public String retrieveCustomerDetails(int id) {
@@ -94,7 +94,7 @@ public class Helper{
             }
         }
     //---------------------------------------------------------------------------------------------
-    public HashMap<String, String> checkPoint(ArrayList<ArrayList> details){
+    public HashMap<String, String> checkPoint(ArrayList<ArrayList> details) throws CustomException {
         ArrayList<Integer> successRate= persistence.insertCustomerInfoToTable(details);
         int size=details.size();
        ArrayList<Integer> removeIndex=new ArrayList<>();
@@ -121,7 +121,7 @@ public class Helper{
         return successAndFailure;
     }
     //---------------------------------------------------------------------------------------------
-    public HashMap insertNewCustomerDetails(ArrayList<ArrayList> details, ArrayList<Integer> successRate, int size, HashMap successAndFailure) {
+    public HashMap insertNewCustomerDetails(ArrayList<ArrayList> details, ArrayList<Integer> successRate, int size, HashMap successAndFailure) throws CustomException {
         for(int i=0;i< details.size();i++) {
             CustomerDetails cusInfo = (CustomerDetails) details.get(i).get(0);
             AccountDetails accInfo = (AccountDetails) details.get(i).get(1);
@@ -145,7 +145,7 @@ public class Helper{
         return successAndFailure;
     }
     //---------------------------------------------------------------------------------------------
-    public String insertNewAccountDetails(AccountDetails accDetails) {
+    public String insertNewAccountDetails(AccountDetails accDetails) throws CustomException {
         ArrayList<Object> successRate= persistence.insertAccountInfoToTable(accDetails);
         if((Integer)successRate.get(0)>0) {
             accDetails.setAccountNumber((Long)successRate.get(1));
@@ -157,11 +157,11 @@ public class Helper{
         }
     }
     //---------------------------------------------------------------------------------------------
-    public String updateAllAccounts(int id){
+    public String updateAllAccounts(int id) throws CustomException {
         int condition= persistence.deactivateAllAccounts(id);
         persistence.deactivateCustomer(id);
         if(condition>0) {
-            boolean bool = CacheMemory.INSTANCE.deleteCustomer(id);
+            CacheMemory.INSTANCE.deleteCustomer(id);
             return "########## Customer "+id+" Deleted successfully##########";
         }
        else{
@@ -169,24 +169,26 @@ public class Helper{
         }
     }
     //---------------------------------------------------------------------------------------------
-    public String updateAccount(int id, long accNum){
+    public String updateAccount(int id, long accNum) throws CustomException {
         int condition = persistence.deactivateAccount(accNum);
         if(condition>0) {
                 CacheMemory.INSTANCE.deleteAccount(id,accNum);
                 HashMap<Long,AccountDetails> accountDetails=CacheMemory.INSTANCE.accountDetails(id);
                 if(accountDetails.size()==0){
-                  persistence.deactivateCustomer(id);
-                  CacheMemory.INSTANCE.deleteCustomer(id);
-                  return "########## Customer "+id+" Deleted successfully##########\n########## Account "+accNum+" Deleted successfully##########";
+                 int value= persistence.deactivateCustomer(id);
+                 if(value>0) {
+                     CacheMemory.INSTANCE.deleteCustomer(id);
+                     return "########## Customer " + id + " Deleted successfully##########\n########## Account " + accNum + " Deleted successfully##########";
+                 }else
+                     return "Server busy!!!!Try again later later";
                 }
                 return "########## Account "+accNum+" Deleted successfully##########";
             }
-        else{
+        else
             return "Server busy!!!!Try again later later";
-        }
     }
     //---------------------------------------------------------------------------------------------
-    public String withdrawal(TransactionDetails transDetails){
+    public String withdrawal(TransactionDetails transDetails) throws CustomException {
         BigDecimal balance=getBalance(transDetails);
         BigDecimal withdrawalAmount=transDetails.getTransactionAmount();
         int comparedValue=balance.compareTo(withdrawalAmount);
@@ -195,20 +197,21 @@ public class Helper{
             String type="Withdrawal";
            boolean bool=  persistence.withdrawalAndDeposit(transDetails,type);
            if(bool){
-               boolean bool1= persistence.updateBalance(transDetails,total);
-               CacheMemory.INSTANCE.updateBalance(transDetails,total);
-               return  "************** Withdrawal of " + withdrawalAmount + " is successful **************";
+              boolean bool1= persistence.updateBalance(transDetails,total);
+              if(bool1) {
+                  CacheMemory.INSTANCE.updateBalance(transDetails, total);
+                  return "************** Withdrawal of " + withdrawalAmount + " is successful **************";
+              }else
+                  return "Server Error !!Try again later";
            }
-            else{
+            else
                 return "Server Error !!Try again later";
-           }
         }
-        else{
+        else
             return "Insufficient balance";
-        }
     }
     //---------------------------------------------------------------------------------------------
-    public String deposit(TransactionDetails transDetails) {
+    public String deposit(TransactionDetails transDetails) throws CustomException {
         BigDecimal balance=getBalance(transDetails);
         BigDecimal depositAmount=transDetails.getTransactionAmount();
         BigDecimal total=balance.add(depositAmount);
@@ -216,8 +219,11 @@ public class Helper{
             boolean bool=  persistence.withdrawalAndDeposit(transDetails,type);
             if(bool){
                 boolean bool1= persistence.updateBalance(transDetails,total);
-                CacheMemory.INSTANCE.updateBalance(transDetails,total);
-                return  "************ Deposit of " + depositAmount + " is successful ***************";
+                if(bool1) {
+                    CacheMemory.INSTANCE.updateBalance(transDetails, total);
+                    return "************ Deposit of " + depositAmount + " is successful ***************";
+                } else
+                    return "Server Error !!Try again later";
             }
             else{
                 return "Server Error !!Try again later";
@@ -232,18 +238,24 @@ public class Helper{
         return  balance;
     }
     //---------------------------------------------------------------------------------------------
-    public HashMap allCustomers(){
+    public String allCustomers(int customerId){
         HashMap<Integer, HashMap<Long, String>> outerMap= CacheMemory.INSTANCE.getAllAccountsMap();
-       return outerMap;
+        if(outerMap.containsKey(customerId)) {
+            return "true";
+        }
+        return "Invalid customer id!!!!!Enter correct customer id";
     }
     //---------------------------------------------------------------------------------------------
-    public HashMap allAccounts(int id){
+    public String allAccounts(int id,long accNum){
         HashMap<Integer, HashMap<Long, String>> outerMap= CacheMemory.INSTANCE.getAllAccountsMap();
         HashMap<Long,String> innerMap=  outerMap.get(id);
-        return innerMap;
+        if(innerMap.containsKey(accNum)) {
+            return "true";
+        }
+        return "Invalid account number !!!!! Enter correct account number.";
     }
     //---------------------------------------------------------------------------------------------
-    public String activateAccounts(int id,long accNum){
+    public String activateAccounts(int id,long accNum) throws CustomException {
         int condition= persistence.activateAccount(id,accNum);
         if(condition>0){
             callingDatabaseForCustomer();
@@ -257,18 +269,11 @@ public class Helper{
 //
 //    }
     //---------------------------------------------------------------------------------------------
-       public String closeConnection() {
+       public String closeConnection() throws CustomException {
            if(persistence.closeConnection())
                return "Connection is closed ";
            else
                return  "Connection is Not closed";
-
        }
-
-
 }
-
-
-
-
 
