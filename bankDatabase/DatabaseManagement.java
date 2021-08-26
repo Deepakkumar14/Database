@@ -31,7 +31,7 @@ public class DatabaseManagement implements Persistence {
 				CustomerDetails customerInfoToMap = new CustomerDetails();
 				int cusId = resultSet.getInt("customer_id");
 				customerInfoToMap.setCustomerId(cusId);
-				customerInfoToMap.setName(resultSet.getString("full_name"));
+				customerInfoToMap.setFullName(resultSet.getString("full_name"));
 				customerInfoToMap.setCity(resultSet.getString("city"));
 				customerList.add(customerInfoToMap);
 			}
@@ -88,7 +88,7 @@ public class DatabaseManagement implements Persistence {
 			 prepStmt1 = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 			for(int i=0;i< details.size();i++) {
 				CustomerDetails cusInfo = (CustomerDetails) details.get(i).get(0);
-				prepStmt1.setString(1, cusInfo.getName());
+				prepStmt1.setString(1, cusInfo.getFullName());
 				prepStmt1.setString(2, cusInfo.getCity());
 				prepStmt1.addBatch();
 			}

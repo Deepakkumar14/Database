@@ -2,7 +2,16 @@ package bankDatabase;
 
 public class CustomerDetails {
 	   private int customerId;
-	   private String fullName,city;
+
+	public String getFullName() {
+		return fullName;
+	}
+
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
+	}
+
+	private String fullName,city;
 
 	    public int getCustomerId() {
 	        return this.customerId;
@@ -12,13 +21,7 @@ public class CustomerDetails {
 	        this.customerId = customerId;
 	    }
 
-	    public String getName() {
-	        return this.fullName;
-	    }
 
-	    public void setName(String full_name) {
-	        this.fullName = full_name;
-	    }
 	    
 	    public String getCity() {
 	        return this.city;

@@ -108,7 +108,7 @@ public class BalanceChecking {
 							System.out.println("Enter the details for customer " + i);
 							ArrayList innerArrayList = new ArrayList(2);
 							System.out.println("Enter the user name");
-							customerDetails.setName(input.nextLine());
+							customerDetails.setFullName(input.nextLine());
 
 							System.out.println("Enter the user city");
 							customerDetails.setCity(input.nextLine());
